@@ -1,0 +1,26 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: voting-solution
+      username: admin
+      password: voting123
+      authentication-database: admin
+
+# Server local
+server:
+  port: 8080
+
+# Configurações locais
+voting-solution:
+  mongodb:
+    collection:
+      agenda-cycle: agenda-cycle
+
+# Debug completo para desenvolvimento
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.data: DEBUG
+    com.votingsolution: DEBUG
