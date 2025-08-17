@@ -1,4 +1,4 @@
-package br.com.naysinger.voting_solution;
+package br.com.naysinger;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

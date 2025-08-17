@@ -1,0 +1,237 @@
+PASSO A PASSO - IMPLEMENTAÇÃO COLLECTION UNIFICADA
+===================================================
+
+ESTRUTURA DE PASTAS
+src/main/java/com/votacao/
+├── api/
+│   ├── controller/
+│   ├── dto/
+│   └── converter/
+├── domain/
+│   ├── model/
+│   ├── service/
+│   └── port/
+├── infrastructure/
+│   ├── repository/
+│   ├── adapter/
+│   └── entity/
+└── config/
+
+PASSO 1: CONFIGURAÇÃO INICIAL
+==============================
+1. [ ] build.gradle - Dependências
+2. [ ] application.yml - Configurações
+3. [ ] MongoConfig.java - Configuração MongoDB
+4. [ ] WebFluxConfig.java - Configuração WebFlux
+5. [ ] SwaggerConfig.java - Documentação API
+
+PASSO 2: CAMADA DOMAIN - MODELS
+================================
+6. [ ] VotingAgenda.java - Documento principal MongoDB
+7. [ ] Agenda.java - Modelo de pauta
+8. [ ] VotingSession.java - Modelo de sessão
+9. [ ] Vote.java - Modelo de voto
+10. [ ] VoteType.java - Enum (YES, NO)
+11. [ ] SessionStatus.java - Enum (SCHEDULED, IN_PROGRESS, CLOSED)
+12. [ ] AgendaStatus.java - Enum (ACTIVE, PENDING, CLOSED)
+13. [ ] CpfStatus.java - Enum (ABLE_TO_VOTE, UNABLE_TO_VOTE)
+
+PASSO 3: CAMADA DOMAIN - PORTS (INTERFACES)
+============================================
+14. [ ] VotingPort.java - Interface para repository
+15. [ ] CpfValidationPort.java - Interface para validação CPF
+
+PASSO 4: CAMADA INFRASTRUCTURE - ENTITY
+========================================
+16. [ ] VotingEntity.java - Entidade MongoDB (se necessário mapeamento diferente)
+
+PASSO 5: CAMADA INFRASTRUCTURE - REPOSITORY
+============================================
+17. [ ] VotingRepository.java - Interface ReactiveMongoRepository
+18. [ ] VotingRepositoryAdapter.java - Implementação do VotingPort
+
+PASSO 6: CAMADA INFRASTRUCTURE - ADAPTER
+=========================================
+19. [ ] CpfValidationAdapter.java - Implementação validação CPF
+20. [ ] WebClientConfig.java - Configuração WebClient
+
+PASSO 7: CAMADA DOMAIN - SERVICES
+==================================
+21. [ ] VotingService.java - Service principal
+22. [ ] AgendaService.java - Service para pautas
+23. [ ] SessionService.java - Service para sessões
+24. [ ] VoteService.java - Service para votos
+25. [ ] CpfValidationService.java - Service validação CPF
+
+PASSO 8: CAMADA API - DTOS REQUEST
+===================================
+26. [ ] CreateAgendaRequest.java
+27. [ ] OpenSessionRequest.java
+28. [ ] VoteRequest.java
+29. [ ] CloseSessionRequest.java
+
+PASSO 9: CAMADA API - DTOS RESPONSE
+====================================
+30. [ ] AgendaResponse.java
+31. [ ] SessionResponse.java
+32. [ ] VoteResponse.java
+33. [ ] VotingResult.java
+34. [ ] CpfValidationResponse.java
+35. [ ] ErrorResponse.java
+
+PASSO 10: CAMADA API - CONVERTERS
+==================================
+36. [ ] AgendaConverter.java
+37. [ ] SessionConverter.java
+38. [ ] VoteConverter.java
+39. [ ] VotingResultConverter.java
+
+PASSO 11: CAMADA API - CONTROLLERS
+===================================
+40. [ ] VotingController.java - Controller principal
+41. [ ] AgendaController.java - Endpoints de pautas
+42. [ ] SessionController.java - Endpoints de sessões
+43. [ ] VoteController.java - Endpoints de votos
+
+PASSO 12: TRATAMENTO DE ERROS
+==============================
+44. [ ] GlobalExceptionHandler.java
+45. [ ] AgendaNotFoundException.java
+46. [ ] SessionNotFoundException.java
+47. [ ] SessionClosedException.java
+48. [ ] VoteAlreadyExistsException.java
+49. [ ] CpfNotAbleToVoteException.java
+50. [ ] CpfInvalidException.java
+
+PASSO 13: VALIDAÇÕES
+=====================
+51. [ ] CpfValidator.java - Validador customizado CPF
+52. [ ] VoteValidation.java - Validações de voto
+53. [ ] SessionValidation.java - Validações de sessão
+
+PASSO 14: CONFIGURAÇÕES ADICIONAIS
+===================================
+54. [ ] SchedulerConfig.java - Para fechar sessões automaticamente
+55. [ ] CorsConfig.java - Configuração CORS
+56. [ ] ValidationConfig.java - Configuração validações
+
+PASSO 15: TESTES UNITÁRIOS
+===========================
+57. [ ] VotingServiceTest.java
+58. [ ] AgendaServiceTest.java
+59. [ ] SessionServiceTest.java
+60. [ ] VoteServiceTest.java
+61. [ ] AgendaConverterTest.java
+62. [ ] SessionConverterTest.java
+63. [ ] VoteConverterTest.java
+
+PASSO 16: TESTES DE INTEGRAÇÃO
+===============================
+64. [ ] VotingControllerTest.java
+65. [ ] VotingRepositoryTest.java
+66. [ ] CpfValidationAdapterTest.java
+
+PASSO 17: TESTES DE PERFORMANCE
+================================
+67. [ ] VotingLoadTest.scala - Gatling
+68. [ ] VotingStressTest.scala - Gatling
+69. [ ] VotingPerformanceTest.java
+
+PASSO 18: DOCUMENTAÇÃO
+=======================
+70. [ ] README.md
+71. [ ] API_DOCUMENTATION.md
+72. [ ] ARCHITECTURE.md
+73. [ ] postman_collection.json
+
+PASSO 19: BÔNUS 1 - INTEGRAÇÃO EXTERNA
+=======================================
+74. [ ] CpfGeneratorUtil.java - Gerador de CPF
+75. [ ] CpfValidationFacade.java - Facade para validação
+76. [ ] ExternalServiceConfig.java
+
+PASSO 20: BÔNUS 2 - PERFORMANCE
+================================
+77. [ ] CacheConfig.java - Configuração cache Redis (opcional)
+78. [ ] MongoIndexConfig.java - Configuração índices
+79. [ ] PerformanceMetrics.java - Métricas customizadas
+
+PASSO 21: BÔNUS 3 - VERSIONAMENTO
+==================================
+80. [ ] ApiVersionConfig.java
+81. [ ] V1VotingController.java
+82. [ ] V2VotingController.java (exemplo futuro)
+83. [ ] VersioningStrategy.md
+
+PASSO 22: RESPONSE MOBILE FORMAT
+=================================
+84. [ ] MobileResponse.java - Response base mobile
+85. [ ] FormularioResponse.java - Tipo FORMULARIO
+86. [ ] SelecaoResponse.java - Tipo SELECAO
+87. [ ] MobileResponseConverter.java
+
+PASSO 23: UTILITÁRIOS
+======================
+88. [ ] DateTimeUtil.java
+89. [ ] CpfUtil.java
+90. [ ] ValidationUtil.java
+91. [ ] JsonUtil.java
+
+PASSO 24: HEALTH CHECK E MONITORING
+====================================
+92. [ ] VotingHealthIndicator.java
+93. [ ] CustomMetrics.java
+94. [ ] LoggingConfig.java
+
+PASSO 25: DEPLOYMENT
+=====================
+95. [ ] Dockerfile
+96. [ ] docker-compose.yml
+97. [ ] application-dev.yml
+98. [ ] application-prod.yml
+
+ORDEM DE IMPLEMENTAÇÃO RECOMENDADA
+===================================
+
+FASE 1 - BASE (Itens 1-25)
+- Configuração inicial
+- Models e estrutura básica
+- Repositories e adapters
+- Services básicos
+
+FASE 2 - API (Itens 26-43)
+- DTOs e converters
+- Controllers
+- Endpoints básicos funcionando
+
+FASE 3 - ROBUSTEZ (Itens 44-56)
+- Tratamento de erros
+- Validações
+- Configurações adicionais
+
+FASE 4 - TESTES (Itens 57-68)
+- Testes unitários
+- Testes de integração
+- Testes de performance
+
+FASE 5 - BÔNUS (Itens 69-83)
+- Funcionalidades extras
+- Performance avançada
+- Versionamento
+
+FASE 6 - FINALIZAÇÃO (Itens 84-98)
+- Mobile format
+- Utilitários
+- Deployment
+- Documentação final
+
+CHECKLIST DE VALIDAÇÃO
+=======================
+- [ ] Todas as funcionalidades core implementadas
+- [ ] Testes passando
+- [ ] Documentação completa
+- [ ] Performance validada
+- [ ] Bônus implementados
+- [ ] Código limpo e organizado
+- [ ] README com instruções claras
+- [ ] Commits organizadosgit 

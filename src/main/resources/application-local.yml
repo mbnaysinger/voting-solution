@@ -7,16 +7,58 @@ spring:
       username: admin
       password: voting123
       authentication-database: admin
+      # Configurações de timeout e retry
+      connection-pool:
+        max-size: 100
+        min-size: 5
+        max-wait-time: 5000
+      # Configurações de timeout
+      socket-timeout: 30000
+      connect-timeout: 10000
+      server-selection-timeout: 30000
+      max-wait-time: 120000
+      heartbeat-frequency: 10000
+      min-heartbeat-frequency: 500
+
+  # Configurações de validação
+  validation:
+    enabled: true
+
+  # Configurações de sessão
+  session:
+    store-type: mongodb
+    timeout: 30m
 
 # Server local
 server:
   port: 8080
+  # Configurações de timeout
+  connection-timeout: 20000
+  # Configurações de shutdown graceful
+  shutdown: graceful
+  spring:
+    lifecycle:
+      timeout-per-shutdown-phase: 30s
 
 # Configurações locais
 voting-solution:
   mongodb:
     collection:
       agenda-cycle: agenda-cycle
+  # Configurações de callback domain configurável
+  callback:
+    domain: http://localhost:8080
+  # Configurações de validação CPF
+  cpf:
+    validation:
+      url: https://user-info.herokuapp.com/users/{cpf}
+      timeout: 5000
+      retry:
+        max-attempts: 3
+        backoff:
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
 
 # Debug completo para desenvolvimento
 logging:
@@ -24,3 +66,34 @@ logging:
     org.springframework.data.mongodb: DEBUG
     org.springframework.data: DEBUG
     com.votingsolution: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.validation: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Configurações de health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mongo:
+      enabled: true
+
+
+      enable-spring-security: false
+
+# Configurações básicas do SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /api-docs/swagger-config
+    url: /api-docs

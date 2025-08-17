@@ -1,4 +1,4 @@
-package br.com.naysinger.voting_solution;
+package br.com.naysinger;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,4 @@ public class VotingSolutionApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(VotingSolutionApplication.class, args);
 	}
-
 }
