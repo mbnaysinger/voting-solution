@@ -3,6 +3,7 @@ package br.com.naysinger.domain.service;
 import br.com.naysinger.domain.model.Agenda;
 import br.com.naysinger.domain.model.Session;
 import br.com.naysinger.domain.port.AgendaPort;
+import br.com.naysinger.domain.port.CpfValidationPort;
 import br.com.naysinger.common.exception.BusinessException;
 import br.com.naysinger.common.exception.DuplicateCpfException;
 import br.com.naysinger.common.enums.AgendaStatus;
@@ -21,9 +22,11 @@ public class AgendaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgendaService.class);
     
     private final AgendaPort agendaPort;
+    private final CpfValidationPort cpfValidationPort;
     
-    public AgendaService(AgendaPort agendaPort) {
+    public AgendaService(AgendaPort agendaPort, CpfValidationPort cpfValidationPort) {
         this.agendaPort = agendaPort;
+        this.cpfValidationPort = cpfValidationPort;
     }
     
     /**
@@ -144,7 +147,8 @@ public class AgendaService {
     public Mono<Agenda> addVote(String sessionId, String userId, String cpf, String voteType) {
         String maskedCpf = cpf != null && cpf.length() >= 4 ? "***********".substring(0, Math.max(0, cpf.length() - 4)) + cpf.substring(cpf.length() - 4) : "***";
         LOGGER.info("[addVote] Registrando voto. sessionId={}, userId={}, cpfMasked={}, voteType={}", sessionId, userId, maskedCpf, voteType);
-        return agendaPort.findBySessionId(sessionId)
+        return cpfValidationPort.check(cpf)
+            .then(agendaPort.findBySessionId(sessionId))
             .switchIfEmpty(Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId)))
             .flatMap(agenda -> {
                 Session targetSession = agenda.getSessionById(sessionId);
