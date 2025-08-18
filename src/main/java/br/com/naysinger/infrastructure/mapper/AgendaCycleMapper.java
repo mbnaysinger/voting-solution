@@ -13,43 +13,43 @@ import java.util.stream.Collectors;
 
 @Component
 public class AgendaCycleMapper {
-    
+
     /**
-     * Converte AgendaCycleEntity para AgendaCycle (domínio)
+     * Converte AgendaCycleEntity para Agenda (domínio)
      */
     public Agenda toDomain(AgendaCycleEntity entity) {
         if (entity == null) {
             return null;
         }
-        
-        Agenda agenda = new Agenda();
-        agenda.setId(entity.getId());
-        agenda.setAgendaId(entity.getAgendaId());
-        agenda.setTitle(entity.getTitle());
-        agenda.setDescription(entity.getDescription());
-        agenda.setStatus(entity.getStatus());
-        agenda.setCreatedAt(entity.getCreatedAt());
-        agenda.setCreatedBy(entity.getCreatedBy());
-        
+
+        Agenda.Builder agendaBuilder = Agenda.builder()
+                .id(entity.getId())
+                .agendaId(entity.getAgendaId())
+                .title(entity.getTitle())
+                .description(entity.getDescription())
+                .status(entity.getStatus())
+                .createdAt(entity.getCreatedAt())
+                .createdBy(entity.getCreatedBy());
+
         // Converter sessões se existirem
         if (entity.getSessions() != null && !entity.getSessions().isEmpty()) {
             List<Session> sessions = entity.getSessions().stream()
-                .map(this::convertSessionEntityToSession)
-                .collect(Collectors.toList());
-            agenda.setSessions(sessions);
+                    .map(this::convertSessionEntityToSession)
+                    .collect(Collectors.toList());
+            agendaBuilder.sessions(sessions);
         }
-        
-        return agenda;
+
+        return agendaBuilder.build();
     }
-    
+
     /**
-     * Converte AgendaCycle (domínio) para AgendaCycleEntity
+     * Converte Agenda (domínio) para AgendaCycleEntity
      */
     public AgendaCycleEntity toEntity(Agenda agenda) {
         if (agenda == null) {
             return null;
         }
-        
+
         AgendaCycleEntity entity = new AgendaCycleEntity();
         entity.setId(agenda.getId());
         entity.setAgendaId(agenda.getAgendaId());
@@ -58,18 +58,18 @@ public class AgendaCycleMapper {
         entity.setStatus(agenda.getStatus());
         entity.setCreatedAt(agenda.getCreatedAt());
         entity.setCreatedBy(agenda.getCreatedBy());
-        
+
         // Converter sessões se existirem
         if (agenda.getSessions() != null && !agenda.getSessions().isEmpty()) {
             List<SessionEntity> sessions = agenda.getSessions().stream()
-                .map(this::convertSessionToSessionEntity)
-                .collect(Collectors.toList());
+                    .map(this::convertSessionToSessionEntity)
+                    .collect(Collectors.toList());
             entity.setSessions(sessions);
         }
-        
+
         return entity;
     }
-    
+
     /**
      * Converte SessionEntity para Session (domínio)
      */
@@ -77,24 +77,24 @@ public class AgendaCycleMapper {
         if (entity == null) {
             return null;
         }
-        
-        Session session = new Session();
-        session.setSessionId(entity.getSessionId());
-        session.setStartTime(entity.getStartTime());
-        session.setEndTime(entity.getEndTime());
-        session.setStatus(entity.getStatus());
-        
+
+        Session.Builder sessionBuilder = Session.builder()
+                .sessionId(entity.getSessionId())
+                .startTime(entity.getStartTime())
+                .endTime(entity.getEndTime())
+                .status(entity.getStatus());
+
         // Converter votos se existirem
-        if (entity.getVotes() != null) {
+        if (entity.getVotes() != null && !entity.getVotes().isEmpty()) {
             List<Vote> votes = entity.getVotes().stream()
-                .map(this::convertVoteEntityToVote)
-                .collect(Collectors.toList());
-            session.setVotes(votes);
+                    .map(this::convertVoteEntityToVote)
+                    .collect(Collectors.toList());
+            sessionBuilder.votes(votes);
         }
-        
-        return session;
+
+        return sessionBuilder.build();
     }
-    
+
     /**
      * Converte Session (domínio) para SessionEntity
      */
@@ -102,24 +102,24 @@ public class AgendaCycleMapper {
         if (session == null) {
             return null;
         }
-        
+
         SessionEntity entity = new SessionEntity();
         entity.setSessionId(session.getSessionId());
         entity.setStartTime(session.getStartTime());
         entity.setEndTime(session.getEndTime());
         entity.setStatus(session.getStatus());
-        
+
         // Converter votos se existirem
-        if (session.getVotes() != null) {
+        if (session.getVotes() != null && !session.getVotes().isEmpty()) {
             List<VoteEntity> votes = session.getVotes().stream()
-                .map(this::convertVoteToVoteEntity)
-                .collect(Collectors.toList());
+                    .map(this::convertVoteToVoteEntity)
+                    .collect(Collectors.toList());
             entity.setVotes(votes);
         }
-        
+
         return entity;
     }
-    
+
     /**
      * Converte VoteEntity para Vote (domínio)
      */
@@ -127,16 +127,15 @@ public class AgendaCycleMapper {
         if (entity == null) {
             return null;
         }
-        
-        Vote vote = new Vote();
-        vote.setUserId(entity.getUserId());
-        vote.setCpf(entity.getCpf());
-        vote.setVote(entity.getVote());
-        vote.setTimestamp(entity.getTimestamp());
-        
-        return vote;
+
+        return Vote.builder()
+                .userId(entity.getUserId())
+                .cpf(entity.getCpf())
+                .vote(entity.getVote())
+                .timestamp(entity.getTimestamp())
+                .build();
     }
-    
+
     /**
      * Converte Vote (domínio) para VoteEntity
      */
@@ -144,13 +143,39 @@ public class AgendaCycleMapper {
         if (vote == null) {
             return null;
         }
-        
+
         VoteEntity entity = new VoteEntity();
         entity.setUserId(vote.getUserId());
         entity.setCpf(vote.getCpf());
         entity.setVote(vote.getVote());
         entity.setTimestamp(vote.getTimestamp());
-        
+
         return entity;
+    }
+
+    /**
+     * Converte lista de AgendaCycleEntity para lista de Agenda (domínio)
+     */
+    public List<Agenda> toDomainList(List<AgendaCycleEntity> entities) {
+        if (entities == null) {
+            return null;
+        }
+
+        return entities.stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converte lista de Agenda (domínio) para lista de AgendaCycleEntity
+     */
+    public List<AgendaCycleEntity> toEntityList(List<Agenda> agendas) {
+        if (agendas == null) {
+            return null;
+        }
+
+        return agendas.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
     }
 }

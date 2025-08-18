@@ -1,0 +1,23 @@
+spring:
+  main:
+    lazy-initialization: true
+    banner-mode: off
+  data:
+    mongodb:
+      # As propriedades de host, porta, etc., serão fornecidas dinamicamente
+      # pelo Testcontainers através de @DynamicPropertySource.
+      # Deixar em branco aqui garante que a aplicação aguarde a configuração do teste.
+      host:
+      port:
+      database:
+      username:
+      password:
+      authentication-database:
+  jackson:
+    default-property-inclusion: non_null
+
+logging:
+  level:
+    org.springframework.data.mongodb: INFO
+    org.testcontainers: INFO
+    br.com.naysinger: DEBUG

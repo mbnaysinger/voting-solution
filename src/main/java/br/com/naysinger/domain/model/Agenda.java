@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Agenda {
-    
+
     private String id;
     private String agendaId;
     private String title;
@@ -16,122 +16,166 @@ public class Agenda {
     private AgendaStatus status;
     private List<Session> sessions;
     private String createdBy;
-    
-    // Construtor padrão
-    public Agenda() {
-        this.sessions = new ArrayList<>();
+
+    // Construtor privado - só pode ser chamado pelo Builder
+    private Agenda(Builder builder) {
+        this.id = builder.id;
+        this.agendaId = builder.agendaId;
+        this.title = builder.title;
+        this.description = builder.description;
+        this.createdAt = builder.createdAt;
+        this.status = builder.status;
+        this.sessions = builder.sessions != null ? builder.sessions : new ArrayList<>();
+        this.createdBy = builder.createdBy;
     }
-    
-    // Construtor com todos os campos
-    public Agenda(String id, String agendaId, String title, String description,
-                  LocalDateTime createdAt, AgendaStatus status, List<Session> sessions, String createdBy) {
-        this.id = id;
-        this.agendaId = agendaId;
-        this.title = title;
-        this.description = description;
-        this.createdAt = createdAt;
-        this.status = status;
-        this.sessions = sessions != null ? sessions : new ArrayList<>();
-        this.createdBy = createdBy;
-    }
-    
-    // Construtor para criar nova agenda
+
+    // Metodo estático para criar uma nova agenda com valores padrão
     public static Agenda createNew(String agendaId, String title, String description, String createdBy) {
-        return new Agenda(
-            null,
-            agendaId,
-            title,
-            description,
-            LocalDateTime.now(),
-            AgendaStatus.PENDING,
-            new ArrayList<>(),
-            createdBy
-        );
+        return new Builder()
+                .agendaId(agendaId)
+                .title(title)
+                .description(description)
+                .createdBy(createdBy)
+                .createdAt(LocalDateTime.now())
+                .status(AgendaStatus.PENDING)
+                .sessions(new ArrayList<>())
+                .build();
     }
-    
-    // Método para adicionar sessão
+
+    // Metodo para criar um builder a partir de uma instância existente
+    public Builder toBuilder() {
+        return new Builder()
+                .id(this.id)
+                .agendaId(this.agendaId)
+                .title(this.title)
+                .description(this.description)
+                .createdAt(this.createdAt)
+                .status(this.status)
+                .sessions(new ArrayList<>(this.sessions))
+                .createdBy(this.createdBy);
+    }
+
+    // Metodo para obter um builder vazio
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Metodo para adicionar sessão
     public void addSession(LocalDateTime startTime, Integer durationMinutes) {
         Session newSession = Session.createNew(startTime, durationMinutes);
         this.sessions.add(newSession);
     }
-    
-    // Método para obter sessões
+
+    // Metodo para obter sessões
     public List<Session> getSessions() {
         return sessions;
     }
-    
-    // Método para verificar se tem sessão ativa
+
+    // Metodo para verificar se tem sessão ativa
     public boolean hasActiveSession() {
         return sessions != null && sessions.stream().anyMatch(Session::isActive);
     }
-    
-    // Método para obter sessão por ID
+
+    // Metodo para obter sessão por ID
     public Session getSessionById(String sessionId) {
         if (sessions == null) return null;
         return sessions.stream()
-            .filter(s -> s.getSessionId().equals(sessionId))
-            .findFirst()
-            .orElse(null);
+                .filter(s -> s.getSessionId().equals(sessionId))
+                .findFirst()
+                .orElse(null);
     }
-    
-    // Getters e Setters
+
+    // Getters (sem setters para imutabilidade)
     public String getId() {
         return id;
     }
-    
-    public void setId(String id) {
-        this.id = id;
-    }
-    
+
     public String getAgendaId() {
         return agendaId;
     }
-    
-    public void setAgendaId(String agendaId) {
-        this.agendaId = agendaId;
-    }
-    
+
     public String getTitle() {
         return title;
     }
-    
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    
+
     public String getDescription() {
         return description;
     }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
+
     public AgendaStatus getStatus() {
         return status;
     }
-    
-    public void setStatus(AgendaStatus status) {
-        this.status = status;
-    }
-    
-    public void setSessions(List<Session> sessions) {
-        this.sessions = sessions;
-    }
-    
+
     public String getCreatedBy() {
         return createdBy;
     }
-    
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+
+    // Classe Builder interna
+    public static class Builder {
+        private String id;
+        private String agendaId;
+        private String title;
+        private String description;
+        private LocalDateTime createdAt;
+        private AgendaStatus status;
+        private List<Session> sessions;
+        private String createdBy;
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder agendaId(String agendaId) {
+            this.agendaId = agendaId;
+            return this;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder status(AgendaStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder sessions(List<Session> sessions) {
+            this.sessions = sessions;
+            return this;
+        }
+
+        public Builder createdBy(String createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        // Metodo para adicionar uma sessão individual
+        public Builder addSession(Session session) {
+            if (this.sessions == null) {
+                this.sessions = new ArrayList<>();
+            }
+            this.sessions.add(session);
+            return this;
+        }
+
+        public Agenda build() {
+            return new Agenda(this);
+        }
     }
 }

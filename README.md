@@ -98,13 +98,6 @@ docker compose run --rm \
   k6 run /load-test/vote-load-test.js
 ```
 
-Com parâmetros (como sugerido):
-```bash
-docker compose run --rm k6 run \
-  -e BASE_URL=http://host.docker.internal:8080/api/v1/agenda \
-  -e RATE=1 -e TIME_UNIT=2s -e DURATION=30s \
-  /load-test/vote-load-test.js
-```
 Observação: no script atual, `RATE`, `TIME_UNIT` e `DURATION` estão fixos no código (não lidos de env). O comando acima funciona, mas esses valores só terão efeito após adaptar o script para ler variáveis de ambiente.
 
 Saída:
@@ -113,7 +106,7 @@ Saída:
 
 #### Exemplo de relatório (HTML) do k6
 
-![Exemplo de relatório do k6](report_example.png)
+![Exemplo de relatório do k6](/load-test/report_example.png)
 
 ### Regras de negócio aplicadas
 - **Criação de sessão**: início deve ser no futuro e duração mínima de 1 minuto.

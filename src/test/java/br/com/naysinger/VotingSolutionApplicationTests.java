@@ -1,13 +1,14 @@
 package br.com.naysinger;
 
+import br.com.naysinger.integration.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class VotingSolutionApplicationTests {
+class VotingSolutionApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {
+		// Este teste agora valida que o contexto do Spring sobe corretamente
+		// com a configuração do Testcontainer.
 	}
 
 }
