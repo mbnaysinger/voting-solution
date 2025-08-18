@@ -1,8 +1,7 @@
 package br.com.naysinger.infrastructure.entity;
 
-import org.springframework.data.mongodb.core.mapping.Field;
-
 import br.com.naysinger.common.enums.VoteType;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +14,7 @@ public class VoteEntity {
 
     private VoteType vote;
 
+    @Field("timestamp")
     private LocalDateTime timestamp;
 
     public VoteEntity() {}

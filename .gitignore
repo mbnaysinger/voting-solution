@@ -35,4 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Others ###
+.DS_Store
 roteiro.txt
