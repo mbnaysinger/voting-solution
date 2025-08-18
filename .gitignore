@@ -37,4 +37,6 @@ out/
 .vscode/
 
 ### Others ###
+load-test/summary.html
+load-test/summary.json
 roteiro.txt
