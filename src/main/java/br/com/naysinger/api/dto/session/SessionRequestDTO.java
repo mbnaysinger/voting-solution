@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class SessionRequestDTO {
     
     @NotNull(message = "A data de início é obrigatória")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
     private LocalDateTime startTime;
     
     @NotNull(message = "A duração em minutos é obrigatória")

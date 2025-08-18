@@ -1,8 +1,11 @@
 package br.com.naysinger.domain.service;
 
+import br.com.naysinger.common.enums.SessionStatus;
 import br.com.naysinger.domain.model.AgendaCycle;
+import br.com.naysinger.domain.model.Session;
 import br.com.naysinger.domain.port.AgendaCyclePort;
 import br.com.naysinger.common.exception.BusinessException;
+import br.com.naysinger.common.exception.DuplicateCpfException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -70,9 +73,9 @@ public class AgendaCycleService {
         return agendaCyclePort.findByAgendaId(agendaId)
             .switchIfEmpty(Mono.error(new BusinessException("Agenda não encontrada com ID: " + agendaId)))
             .flatMap(agendaCycle -> {
-                // Validar se já existe uma sessão ativa para esta agenda
+                // Validar se já existe uma sessão ativa (não expirada) para esta agenda
                 if (agendaCycle.hasActiveSession()) {
-                    return Mono.error(new BusinessException("Já existe uma sessão ativa para esta agenda"));
+                    return Mono.error(new BusinessException("Já existe uma sessão ativa (não expirada) para esta agenda. Aguarde a sessão atual expirar ou feche-a antes de criar uma nova."));
                 }
                 
                 // Validar se a data de início é no futuro
@@ -101,6 +104,38 @@ public class AgendaCycleService {
      * Adiciona um voto a uma sessão
      */
     public Mono<AgendaCycle> addVote(String sessionId, String userId, String cpf, String voteType) {
-        return agendaCyclePort.addVote(sessionId, userId, cpf, voteType);
+        return agendaCyclePort.findBySessionId(sessionId)
+            .switchIfEmpty(Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId)))
+            .flatMap(agendaCycle -> {
+                // Obter a sessão específica
+                Session targetSession = agendaCycle.getSessionById(sessionId);
+                if (targetSession == null) {
+                    return Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId));
+                }
+                
+                // Validar se a sessão está em andamento (já começou e não expirou)
+                if (!targetSession.isInProgress()) {
+                    if (!targetSession.hasStarted()) {
+                        return Mono.error(new BusinessException("Sessão ainda não começou. Aguarde o horário de início."));
+                    } else if (targetSession.getStatus() != SessionStatus.OPEN) {
+                        return Mono.error(new BusinessException("Sessão não está aberta para votação"));
+                    } else {
+                        return Mono.error(new BusinessException("Sessão já expirou"));
+                    }
+                }
+                
+                // Validar se o CPF já votou nesta sessão
+                if (targetSession.getVotes() != null) {
+                    boolean cpfJaVotou = targetSession.getVotes().stream()
+                        .anyMatch(vote -> vote.getCpf().equals(cpf));
+                    
+                    if (cpfJaVotou) {
+                        return Mono.error(new DuplicateCpfException(cpf));
+                    }
+                }
+                
+                // Adicionar voto
+                return agendaCyclePort.addVote(sessionId, userId, cpf, voteType);
+            });
     }
 }

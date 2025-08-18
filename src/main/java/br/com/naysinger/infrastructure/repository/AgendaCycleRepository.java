@@ -9,33 +9,21 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface AgendaCycleRepository extends ReactiveMongoRepository<AgendaCycleEntity, String> {
-    
-    /**
-     * Busca por agendaId
-     */
+
     Mono<AgendaCycleEntity> findByAgendaId(String agendaId);
 
-    @Query("{ 'session.session_id': ?0}")
+    @Query("{ 'sessions.session_id': ?0}")
     Mono<AgendaCycleEntity> findBySessionId(String sessionId);
 
-    @Query("{ 'agenda_id': ?0, 'session.session_id': ?1 }")
+    @Query("{ 'agenda_id': ?0, 'sessions.session_id': ?1 }")
     Mono<AgendaCycleEntity> findByAgendaIdAndSessionId(String agendaId, String sessionId);
-    
-    /**
-     * Busca todas as agendas que possuem sessão
-     */
-    @Query("{ 'session': { $exists: true, $ne: null } }")
+
+    @Query("{ 'sessions': { $exists: true, $ne: null } }")
     Flux<AgendaCycleEntity> findAgendasWithSession();
-    
-    /**
-     * Busca agendas com sessões ativas
-     */
-    @Query("{ 'session.status': 'OPEN' }")
+
+    @Query("{ 'sessions.status': 'OPEN' }")
     Flux<AgendaCycleEntity> findAgendasWithActiveSession();
-    
-    /**
-     * Busca por agendaId que possui sessão
-     */
+
     @Query("{ 'agendaId': ?0, 'session': { $exists: true, $ne: null } }")
     Mono<AgendaCycleEntity> findByAgendaIdWithSession(String agendaId);
 }

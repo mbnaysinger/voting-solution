@@ -16,7 +16,7 @@ public class AgendaRequestDTO {
     private String createdBy;
     
     // Dados da Sessão (opcional - pode ser criada depois)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
     private LocalDateTime sessionStartTime;
     
     @Positive(message = "A duração deve ser maior que zero")

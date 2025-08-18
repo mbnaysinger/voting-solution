@@ -31,10 +31,12 @@ public class AgendaCycleMapper {
         agendaCycle.setCreatedAt(entity.getCreatedAt());
         agendaCycle.setCreatedBy(entity.getCreatedBy());
         
-        // Converter sessão se existir
-        if (entity.getSession() != null) {
-            Session session = convertSessionEntityToSession(entity.getSession());
-            agendaCycle.setSession(session);
+        // Converter sessões se existirem
+        if (entity.getSessions() != null && !entity.getSessions().isEmpty()) {
+            List<Session> sessions = entity.getSessions().stream()
+                .map(this::convertSessionEntityToSession)
+                .collect(Collectors.toList());
+            agendaCycle.setSessions(sessions);
         }
         
         return agendaCycle;
@@ -57,10 +59,12 @@ public class AgendaCycleMapper {
         entity.setCreatedAt(agendaCycle.getCreatedAt());
         entity.setCreatedBy(agendaCycle.getCreatedBy());
         
-        // Converter sessão se existir
-        if (agendaCycle.getSession() != null) {
-            SessionEntity sessionEntity = convertSessionToSessionEntity(agendaCycle.getSession());
-            entity.setSession(sessionEntity);
+        // Converter sessões se existirem
+        if (agendaCycle.getSessions() != null && !agendaCycle.getSessions().isEmpty()) {
+            List<SessionEntity> sessions = agendaCycle.getSessions().stream()
+                .map(this::convertSessionToSessionEntity)
+                .collect(Collectors.toList());
+            entity.setSessions(sessions);
         }
         
         return entity;

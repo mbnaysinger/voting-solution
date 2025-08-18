@@ -11,7 +11,6 @@ import java.util.UUID;
 public class Session {
     
     private String sessionId;
-    private String agendaId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private SessionStatus status;
@@ -21,10 +20,9 @@ public class Session {
         this.votes = new ArrayList<>();
     }
     
-    public Session(String sessionId, String agendaId, LocalDateTime startTime,
-                  LocalDateTime endTime, SessionStatus status, List<Vote> votes) {
+    public Session(String sessionId, LocalDateTime startTime, LocalDateTime endTime, 
+                  SessionStatus status, List<Vote> votes) {
         this.sessionId = sessionId;
-        this.agendaId = agendaId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
@@ -32,13 +30,12 @@ public class Session {
     }
     
     // Construtor para criar nova sessão
-    public static Session createNew(String agendaId, LocalDateTime startTime, Integer durationMinutes) {
+    public static Session createNew(LocalDateTime startTime, Integer durationMinutes) {
         String sessionId = "session_" + UUID.randomUUID().toString().substring(0, 8);
         LocalDateTime endTime = startTime.plusMinutes(durationMinutes);
         
         return new Session(
             sessionId,
-            agendaId,
             startTime,
             endTime,
             SessionStatus.OPEN,
@@ -52,8 +49,21 @@ public class Session {
         this.votes.add(vote);
     }
     
-    // Metodo para verificar se a sessão está ativa
+    // Metodo para verificar se a sessão esta ativa
     public boolean isActive() {
+        LocalDateTime now = LocalDateTime.now();
+        return status == SessionStatus.OPEN && 
+               now.isBefore(endTime); // Sessão ativa se não expirou
+    }
+    
+    // Método para verificar se a sessão já começou
+    public boolean hasStarted() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(startTime);
+    }
+    
+    // Método para verificar se a sessão está em andamento (já começou e não expirou)
+    public boolean isInProgress() {
         LocalDateTime now = LocalDateTime.now();
         return status == SessionStatus.OPEN && 
                now.isAfter(startTime) && 
@@ -88,14 +98,6 @@ public class Session {
     
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
-    }
-    
-    public String getAgendaId() {
-        return agendaId;
-    }
-    
-    public void setAgendaId(String agendaId) {
-        this.agendaId = agendaId;
     }
     
     public LocalDateTime getStartTime() {

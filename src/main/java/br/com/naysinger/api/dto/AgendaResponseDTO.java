@@ -5,6 +5,7 @@ import br.com.naysinger.common.enums.AgendaStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class AgendaResponseDTO {
     
@@ -20,16 +21,16 @@ public class AgendaResponseDTO {
     
     private String createdBy;
     
-    // Dados da Sessão
-    private SessionDTO session;
+    // Dados das Sessões
+    private List<SessionDTO> sessions;
     
     // Construtor padrão
     public AgendaResponseDTO() {}
     
     // Construtor com todos os campos
-    public AgendaResponseDTO(String id, String agendaId, String title, String description,
-                             AgendaStatus status, LocalDateTime createdAt, String createdBy,
-                             SessionDTO session) {
+    public AgendaResponseDTO(String id, String agendaId, String title, String description, 
+                            AgendaStatus status, LocalDateTime createdAt, String createdBy, 
+                            List<SessionDTO> sessions) {
         this.id = id;
         this.agendaId = agendaId;
         this.title = title;
@@ -37,7 +38,7 @@ public class AgendaResponseDTO {
         this.status = status;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
-        this.session = session;
+        this.sessions = sessions;
     }
     
     // Getters e Setters
@@ -97,11 +98,11 @@ public class AgendaResponseDTO {
         this.createdBy = createdBy;
     }
     
-    public SessionDTO getSession() {
-        return session;
+    public List<SessionDTO> getSessions() {
+        return sessions;
     }
     
-    public void setSession(SessionDTO session) {
-        this.session = session;
+    public void setSessions(List<SessionDTO> sessions) {
+        this.sessions = sessions;
     }
 }

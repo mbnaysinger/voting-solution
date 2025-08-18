@@ -7,125 +7,117 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "agenda_cycle")
 public class AgendaCycleEntity {
-
+    
     @Id
     private String id;
-
+    
     @Field("agenda_id")
     @Indexed(unique = true)
     private String agendaId;
-
+    
+    @Field("title")
     private String title;
-
+    
+    @Field("description")
     private String description;
-
+    
     @Field("created_at")
     private LocalDateTime createdAt;
-
+    
+    @Field("status")
     private AgendaStatus status;
-
-    @Field("session")
-    private SessionEntity session;
-
+    
+    @Field("sessions")
+    private List<SessionEntity> sessions;
+    
     @Field("created_by")
     private String createdBy;
-
-    public AgendaCycleEntity() {}
-
-    public AgendaCycleEntity(String agendaId, String title, String description, AgendaStatus status, SessionEntity session, String createdBy) {
+    
+    // Construtor padrão
+    public AgendaCycleEntity() {
+        this.sessions = new ArrayList<>();
+    }
+    
+    // Construtor com todos os campos
+    public AgendaCycleEntity(String id, String agendaId, String title, String description, 
+                           LocalDateTime createdAt, AgendaStatus status, List<SessionEntity> sessions, String createdBy) {
+        this.id = id;
         this.agendaId = agendaId;
         this.title = title;
         this.description = description;
+        this.createdAt = createdAt;
         this.status = status;
-        this.session = session;
+        this.sessions = sessions != null ? sessions : new ArrayList<>();
         this.createdBy = createdBy;
-        this.createdAt = LocalDateTime.now();
     }
-
+    
+    // Getters e Setters
     public String getId() {
         return id;
     }
-
+    
     public void setId(String id) {
         this.id = id;
     }
-
+    
     public String getAgendaId() {
         return agendaId;
     }
-
+    
     public void setAgendaId(String agendaId) {
         this.agendaId = agendaId;
     }
-
+    
     public String getTitle() {
         return title;
     }
-
+    
     public void setTitle(String title) {
         this.title = title;
     }
-
+    
     public String getDescription() {
         return description;
     }
-
+    
     public void setDescription(String description) {
         this.description = description;
     }
-
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
+    
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
+    
     public AgendaStatus getStatus() {
         return status;
     }
-
+    
     public void setStatus(AgendaStatus status) {
         this.status = status;
     }
-
-    public SessionEntity getSession() {
-        return session;
+    
+    public List<SessionEntity> getSessions() {
+        return sessions;
     }
-
-    public void setSession(SessionEntity session) {
-        this.session = session;
+    
+    public void setSessions(List<SessionEntity> sessions) {
+        this.sessions = sessions;
     }
-
+    
     public String getCreatedBy() {
         return createdBy;
     }
-
+    
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "AgendaCycle{" +
-                "id='" + id + '\'' +
-                ", agendaId='" + agendaId + '\'' +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
-                ", status=" + status +
-                ", session=" + session +
-                ", createdBy='" + createdBy + '\'' +
-                '}';
     }
 }

@@ -31,6 +31,28 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.badRequest().body(errors));
     }
     
+    @ExceptionHandler(BusinessException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleBusinessException(BusinessException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.BAD_REQUEST.value());
+        errors.put("error", "Erro de negócio");
+        errors.put("message", ex.getMessage());
+        
+        return Mono.just(ResponseEntity.badRequest().body(errors));
+    }
+    
+    @ExceptionHandler(DuplicateCpfException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleDuplicateCpfException(DuplicateCpfException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.CONFLICT.value());
+        errors.put("error", "CPF duplicado");
+        errors.put("message", ex.getMessage());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(errors));
+    }
+    
     @ExceptionHandler(IllegalArgumentException.class)
     public Mono<ResponseEntity<Map<String, Object>>> handleIllegalArgumentException(IllegalArgumentException ex) {
         Map<String, Object> errors = new HashMap<>();

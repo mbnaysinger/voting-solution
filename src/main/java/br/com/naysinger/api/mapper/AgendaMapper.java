@@ -2,11 +2,13 @@ package br.com.naysinger.api.mapper;
 
 import br.com.naysinger.api.dto.AgendaRequestDTO;
 import br.com.naysinger.api.dto.AgendaResponseDTO;
+import br.com.naysinger.api.dto.session.SessionDTO;
 import br.com.naysinger.domain.model.AgendaCycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class AgendaMapper {
@@ -15,7 +17,7 @@ public class AgendaMapper {
     private SessionMapper sessionMapper;
     
     /**
-     * Converte AgendaCycleRequestDTO para AgendaCycle (domínio)
+     * Converte AgendaRequestDTO para AgendaCycle (domínio)
      */
     public AgendaCycle toDomain(AgendaRequestDTO dto) {
         if (dto == null) {
@@ -23,7 +25,7 @@ public class AgendaMapper {
         }
         
         // Gerar agendaId automático
-        String agendaId = "agenda_" + UUID.randomUUID().toString().substring(0, 8);
+        String agendaId = "agenda_" + System.currentTimeMillis();
         
         AgendaCycle agendaCycle = AgendaCycle.createNew(
             agendaId,
@@ -41,7 +43,7 @@ public class AgendaMapper {
     }
     
     /**
-     * Converte AgendaCycle (domínio) para AgendaCycleResponseDTO
+     * Converte AgendaCycle (domínio) para AgendaResponseDTO
      */
     public AgendaResponseDTO toResponse(AgendaCycle agendaCycle) {
         if (agendaCycle == null) {
@@ -57,9 +59,12 @@ public class AgendaMapper {
         dto.setCreatedAt(agendaCycle.getCreatedAt());
         dto.setCreatedBy(agendaCycle.getCreatedBy());
         
-        // Converter sessão se existir usando o SessionMapper
-        if (agendaCycle.getSession() != null) {
-            dto.setSession(sessionMapper.toDTO(agendaCycle.getSession()));
+        // Converter sessões se existirem usando o SessionMapper
+        if (agendaCycle.getSessions() != null && !agendaCycle.getSessions().isEmpty()) {
+            List<SessionDTO> sessions = agendaCycle.getSessions().stream()
+                .map(sessionMapper::toDTO)
+                .collect(Collectors.toList());
+            dto.setSessions(sessions);
         }
         
         return dto;
