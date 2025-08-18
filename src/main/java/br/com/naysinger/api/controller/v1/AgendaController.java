@@ -2,18 +2,25 @@ package br.com.naysinger.api.controller.v1;
 
 import br.com.naysinger.api.dto.AgendaRequestDTO;
 import br.com.naysinger.api.dto.AgendaResponseDTO;
+import br.com.naysinger.api.dto.vote.VoteResultResponse;
 import br.com.naysinger.api.dto.session.SessionRequestDTO;
 import br.com.naysinger.api.mapper.AgendaMapper;
 import br.com.naysinger.common.enums.SessionStatus;
 import br.com.naysinger.domain.model.AgendaCycle;
-import br.com.naysinger.domain.model.Session;
+import br.com.naysinger.domain.model.VoteResult;
 import br.com.naysinger.domain.service.AgendaCycleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
@@ -22,12 +29,12 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/agenda")
 @Tag(name = "Agenda Cycles", description = "API para gerenciamento completo de agendas com sessões de votação")
-public class AgendaCycleController {
+public class AgendaController {
     
     private final AgendaCycleService agendaCycleService;
     private final AgendaMapper agendaMapper;
     
-    public AgendaCycleController(AgendaCycleService agendaCycleService, AgendaMapper agendaMapper) {
+    public AgendaController(AgendaCycleService agendaCycleService, AgendaMapper agendaMapper) {
         this.agendaCycleService = agendaCycleService;
         this.agendaMapper = agendaMapper;
     }
@@ -146,47 +153,27 @@ public class AgendaCycleController {
             .map(agendaMapper::toResponse)
             .map(ResponseEntity::ok);
     }
-    
+
     @GetMapping("/session/{sessionId}/result")
-    @Operation(summary = "Obter resultado da votação", 
-               description = "Retorna o resultado final de uma sessão fechada")
+    @Operation(summary = "Obter resultado da votação",
+            description = "Retorna o resultado final de uma sessão fechada")
     public Mono<ResponseEntity<Object>> getVoteResult(@PathVariable String sessionId) {
         return agendaCycleService.findBySessionId(sessionId)
-            .flatMap(agendaCycle -> {
-                if (agendaCycle.getSession() == null || 
-                    agendaCycle.getSession().getStatus() != SessionStatus.CLOSED) {
-                    return Mono.just(ResponseEntity.badRequest()
-                        .body("Sessão ainda não foi fechada"));
-                }
-                
-                Session.VoteResult result = agendaCycle.getSession().getVoteResult();
-                
-                return Mono.just(ResponseEntity.ok(new VoteResultResponse(
-                    result.getSimVotes(),
-                    result.getNaoVotes(),
-                    result.getTotalVotes(),
-                    result.getWinner()
-                )));
-            });
-    }
-    
-    // Classe interna para resposta do resultado da votação
-    private static class VoteResultResponse {
-        private final long simVotes;
-        private final long naoVotes;
-        private final long totalVotes;
-        private final String winner;
-        
-        public VoteResultResponse(long simVotes, long naoVotes, long totalVotes, String winner) {
-            this.simVotes = simVotes;
-            this.naoVotes = naoVotes;
-            this.totalVotes = totalVotes;
-            this.winner = winner;
-        }
-        
-        public long getSimVotes() { return simVotes; }
-        public long getNaoVotes() { return naoVotes; }
-        public long getTotalVotes() { return totalVotes; }
-        public String getWinner() { return winner; }
+                .flatMap(agendaCycle -> {
+                    if (agendaCycle.getSession() == null ||
+                            agendaCycle.getSession().getStatus() != SessionStatus.CLOSED) {
+                        return Mono.just(ResponseEntity.badRequest()
+                                .body("Sessão ainda não foi fechada"));
+                    }
+
+                    VoteResult result = agendaCycle.getSession().getVoteResult();
+
+                    return Mono.just(ResponseEntity.ok(new VoteResultResponse(
+                            result.simVotes(),
+                            result.naoVotes(),
+                            result.totalVotes(),
+                            result.getWinner()
+                    )));
+                });
     }
 }

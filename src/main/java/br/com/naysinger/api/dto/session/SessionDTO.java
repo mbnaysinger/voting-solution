@@ -21,11 +21,9 @@ public class SessionDTO {
     private Integer totalVotes;
     private List<VoteDTO> votes;
     
-    // Construtor padrão
     public SessionDTO() {}
     
-    // Construtor com todos os campos
-    public SessionDTO(String sessionId, LocalDateTime startTime, LocalDateTime endTime, 
+    public SessionDTO(String sessionId, LocalDateTime startTime, LocalDateTime endTime,
                      SessionStatus status, Integer totalVotes, List<VoteDTO> votes) {
         this.sessionId = sessionId;
         this.startTime = startTime;
@@ -35,7 +33,6 @@ public class SessionDTO {
         this.votes = votes;
     }
     
-    // Getters e Setters
     public String getSessionId() {
         return sessionId;
     }

@@ -17,13 +17,11 @@ public class Session {
     private SessionStatus status;
     private List<Vote> votes;
     
-    // Construtor padrão
     public Session() {
         this.votes = new ArrayList<>();
     }
     
-    // Construtor com todos os campos
-    public Session(String sessionId, String agendaId, LocalDateTime startTime, 
+    public Session(String sessionId, String agendaId, LocalDateTime startTime,
                   LocalDateTime endTime, SessionStatus status, List<Vote> votes) {
         this.sessionId = sessionId;
         this.agendaId = agendaId;
@@ -48,13 +46,13 @@ public class Session {
         );
     }
     
-    // Método para adicionar voto
+    // Metodo para adicionar voto
     public void addVote(String userId, String cpf, VoteType voteType) {
         Vote vote = new Vote(userId, cpf, voteType);
         this.votes.add(vote);
     }
     
-    // Método para verificar se a sessão está ativa
+    // Metodo para verificar se a sessão está ativa
     public boolean isActive() {
         LocalDateTime now = LocalDateTime.now();
         return status == SessionStatus.OPEN && 
@@ -62,17 +60,17 @@ public class Session {
                now.isBefore(endTime);
     }
     
-    // Método para fechar a sessão
+    // Metodo para fechar a sessao
     public void closeSession() {
         this.status = SessionStatus.CLOSED;
     }
     
-    // Método para obter total de votos
+    // Metodo para obter total de votos
     public int getTotalVotes() {
         return votes != null ? votes.size() : 0;
     }
     
-    // Método para obter resultado da votação
+    // Metodo para obter resultado da votacao
     public VoteResult getVoteResult() {
         if (votes == null || votes.isEmpty()) {
             return new VoteResult(0, 0, 0);
@@ -84,7 +82,6 @@ public class Session {
         return new VoteResult(simVotes, naoVotes, votes.size());
     }
     
-    // Getters e Setters
     public String getSessionId() {
         return sessionId;
     }
@@ -131,28 +128,5 @@ public class Session {
     
     public void setVotes(List<Vote> votes) {
         this.votes = votes;
-    }
-    
-    // Classe interna para resultado da votação
-    public static class VoteResult {
-        private final long simVotes;
-        private final long naoVotes;
-        private final long totalVotes;
-        
-        public VoteResult(long simVotes, long naoVotes, long totalVotes) {
-            this.simVotes = simVotes;
-            this.naoVotes = naoVotes;
-            this.totalVotes = totalVotes;
-        }
-        
-        public long getSimVotes() { return simVotes; }
-        public long getNaoVotes() { return naoVotes; }
-        public long getTotalVotes() { return totalVotes; }
-        
-        public String getWinner() {
-            if (simVotes > naoVotes) return "SIM";
-            if (naoVotes > simVotes) return "NÃO";
-            return "EMPATE";
-        }
     }
 }
