@@ -1,6 +1,6 @@
 package br.com.naysinger.infrastructure.mapper;
 
-import br.com.naysinger.domain.model.AgendaCycle;
+import br.com.naysinger.domain.model.Agenda;
 import br.com.naysinger.domain.model.Session;
 import br.com.naysinger.domain.model.Vote;
 import br.com.naysinger.infrastructure.entity.AgendaCycleEntity;
@@ -17,51 +17,51 @@ public class AgendaCycleMapper {
     /**
      * Converte AgendaCycleEntity para AgendaCycle (domínio)
      */
-    public AgendaCycle toDomain(AgendaCycleEntity entity) {
+    public Agenda toDomain(AgendaCycleEntity entity) {
         if (entity == null) {
             return null;
         }
         
-        AgendaCycle agendaCycle = new AgendaCycle();
-        agendaCycle.setId(entity.getId());
-        agendaCycle.setAgendaId(entity.getAgendaId());
-        agendaCycle.setTitle(entity.getTitle());
-        agendaCycle.setDescription(entity.getDescription());
-        agendaCycle.setStatus(entity.getStatus());
-        agendaCycle.setCreatedAt(entity.getCreatedAt());
-        agendaCycle.setCreatedBy(entity.getCreatedBy());
+        Agenda agenda = new Agenda();
+        agenda.setId(entity.getId());
+        agenda.setAgendaId(entity.getAgendaId());
+        agenda.setTitle(entity.getTitle());
+        agenda.setDescription(entity.getDescription());
+        agenda.setStatus(entity.getStatus());
+        agenda.setCreatedAt(entity.getCreatedAt());
+        agenda.setCreatedBy(entity.getCreatedBy());
         
         // Converter sessões se existirem
         if (entity.getSessions() != null && !entity.getSessions().isEmpty()) {
             List<Session> sessions = entity.getSessions().stream()
                 .map(this::convertSessionEntityToSession)
                 .collect(Collectors.toList());
-            agendaCycle.setSessions(sessions);
+            agenda.setSessions(sessions);
         }
         
-        return agendaCycle;
+        return agenda;
     }
     
     /**
      * Converte AgendaCycle (domínio) para AgendaCycleEntity
      */
-    public AgendaCycleEntity toEntity(AgendaCycle agendaCycle) {
-        if (agendaCycle == null) {
+    public AgendaCycleEntity toEntity(Agenda agenda) {
+        if (agenda == null) {
             return null;
         }
         
         AgendaCycleEntity entity = new AgendaCycleEntity();
-        entity.setId(agendaCycle.getId());
-        entity.setAgendaId(agendaCycle.getAgendaId());
-        entity.setTitle(agendaCycle.getTitle());
-        entity.setDescription(agendaCycle.getDescription());
-        entity.setStatus(agendaCycle.getStatus());
-        entity.setCreatedAt(agendaCycle.getCreatedAt());
-        entity.setCreatedBy(agendaCycle.getCreatedBy());
+        entity.setId(agenda.getId());
+        entity.setAgendaId(agenda.getAgendaId());
+        entity.setTitle(agenda.getTitle());
+        entity.setDescription(agenda.getDescription());
+        entity.setStatus(agenda.getStatus());
+        entity.setCreatedAt(agenda.getCreatedAt());
+        entity.setCreatedBy(agenda.getCreatedBy());
         
         // Converter sessões se existirem
-        if (agendaCycle.getSessions() != null && !agendaCycle.getSessions().isEmpty()) {
-            List<SessionEntity> sessions = agendaCycle.getSessions().stream()
+        if (agenda.getSessions() != null && !agenda.getSessions().isEmpty()) {
+            List<SessionEntity> sessions = agenda.getSessions().stream()
                 .map(this::convertSessionToSessionEntity)
                 .collect(Collectors.toList());
             entity.setSessions(sessions);

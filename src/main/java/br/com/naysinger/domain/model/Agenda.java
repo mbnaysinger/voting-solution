@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AgendaCycle {
+public class Agenda {
     
     private String id;
     private String agendaId;
@@ -18,13 +18,13 @@ public class AgendaCycle {
     private String createdBy;
     
     // Construtor padrão
-    public AgendaCycle() {
+    public Agenda() {
         this.sessions = new ArrayList<>();
     }
     
     // Construtor com todos os campos
-    public AgendaCycle(String id, String agendaId, String title, String description, 
-                      LocalDateTime createdAt, AgendaStatus status, List<Session> sessions, String createdBy) {
+    public Agenda(String id, String agendaId, String title, String description,
+                  LocalDateTime createdAt, AgendaStatus status, List<Session> sessions, String createdBy) {
         this.id = id;
         this.agendaId = agendaId;
         this.title = title;
@@ -36,8 +36,8 @@ public class AgendaCycle {
     }
     
     // Construtor para criar nova agenda
-    public static AgendaCycle createNew(String agendaId, String title, String description, String createdBy) {
-        return new AgendaCycle(
+    public static Agenda createNew(String agendaId, String title, String description, String createdBy) {
+        return new Agenda(
             null,
             agendaId,
             title,

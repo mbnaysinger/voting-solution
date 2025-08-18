@@ -1,11 +1,12 @@
 package br.com.naysinger.infrastructure.adapter;
 
-import br.com.naysinger.domain.model.AgendaCycle;
-import br.com.naysinger.domain.port.AgendaCyclePort;
+import br.com.naysinger.domain.model.Agenda;
+import br.com.naysinger.domain.port.AgendaPort;
 import br.com.naysinger.infrastructure.entity.AgendaCycleEntity;
 import br.com.naysinger.infrastructure.mapper.AgendaCycleMapper;
 import br.com.naysinger.infrastructure.repository.AgendaCycleRepository;
 import br.com.naysinger.common.enums.SessionStatus;
+import br.com.naysinger.common.enums.AgendaStatus;
 import br.com.naysinger.common.enums.VoteType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import br.com.naysinger.infrastructure.entity.SessionEntity;
 import br.com.naysinger.infrastructure.entity.VoteEntity;
 
 @Component
-public class AgendaCycleAdapter implements AgendaCyclePort {
+public class AgendaCycleAdapter implements AgendaPort {
     
     private static final Logger logger = LoggerFactory.getLogger(AgendaCycleAdapter.class);
     
@@ -32,51 +33,51 @@ public class AgendaCycleAdapter implements AgendaCyclePort {
     }
     
     @Override
-    public Mono<AgendaCycle> save(AgendaCycle agendaCycle) {
-        AgendaCycleEntity entity = agendaCycleMapper.toEntity(agendaCycle);
+    public Mono<Agenda> save(Agenda agenda) {
+        AgendaCycleEntity entity = agendaCycleMapper.toEntity(agenda);
         return agendaCycleRepository.save(entity)
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Mono<AgendaCycle> findById(String id) {
+    public Mono<Agenda> findById(String id) {
         return agendaCycleRepository.findById(id)
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Mono<AgendaCycle> findByAgendaId(String agendaId) {
+    public Mono<Agenda> findByAgendaId(String agendaId) {
         return agendaCycleRepository.findByAgendaId(agendaId)
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Mono<AgendaCycle> findBySessionId(String sessionId) {
+    public Mono<Agenda> findBySessionId(String sessionId) {
         return agendaCycleRepository.findBySessionId(sessionId)
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Flux<AgendaCycle> findAll() {
+    public Flux<Agenda> findAll() {
         return agendaCycleRepository.findAll()
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Flux<AgendaCycle> findAgendasWithActiveSession() {
+    public Flux<Agenda> findAgendasWithActiveSession() {
         return agendaCycleRepository.findAgendasWithActiveSession()
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Mono<AgendaCycle> update(AgendaCycle agendaCycle) {
-        AgendaCycleEntity entity = agendaCycleMapper.toEntity(agendaCycle);
+    public Mono<Agenda> update(Agenda agenda) {
+        AgendaCycleEntity entity = agendaCycleMapper.toEntity(agenda);
         return agendaCycleRepository.save(entity)
             .map(agendaCycleMapper::toDomain);
     }
     
     @Override
-    public Mono<AgendaCycle> addSession(String agendaId, LocalDateTime startTime, Integer durationMinutes) {
+    public Mono<Agenda> addSession(String agendaId, LocalDateTime startTime, Integer durationMinutes) {
         return agendaCycleRepository.findByAgendaId(agendaId)
             .flatMap(agendaCycle -> {
                 SessionEntity sessionEntity = createNewSessionEntity(startTime, durationMinutes);
@@ -95,7 +96,7 @@ public class AgendaCycleAdapter implements AgendaCyclePort {
     }
     
     @Override
-    public Mono<AgendaCycle> closeSession(String sessionId) {
+    public Mono<Agenda> closeSession(String sessionId) {
         return agendaCycleRepository.findBySessionId(sessionId)
             .flatMap(agendaCycle -> {
                 if (agendaCycle.getSessions() != null) {
@@ -110,7 +111,26 @@ public class AgendaCycleAdapter implements AgendaCyclePort {
     }
     
     @Override
-    public Mono<AgendaCycle> addVote(String sessionId, String userId, String cpf, String voteType) {
+    public Mono<Agenda> closeAgenda(String agendaId) {
+        return agendaCycleRepository.findByAgendaId(agendaId)
+            .flatMap(agendaCycle -> {
+                // Fechar a agenda
+                agendaCycle.setStatus(AgendaStatus.CLOSED);
+                
+                // Fechar todas as sessões abertas
+                if (agendaCycle.getSessions() != null) {
+                    agendaCycle.getSessions().stream()
+                        .filter(session -> session.getStatus() == SessionStatus.OPEN)
+                        .forEach(session -> session.setStatus(SessionStatus.CLOSED));
+                }
+                
+                return agendaCycleRepository.save(agendaCycle);
+            })
+            .map(agendaCycleMapper::toDomain);
+    }
+    
+    @Override
+    public Mono<Agenda> addVote(String sessionId, String userId, String cpf, String voteType) {
         return agendaCycleRepository.findBySessionId(sessionId)
             .flatMap(agendaCycle -> {
                 if (agendaCycle.getSessions() != null) {

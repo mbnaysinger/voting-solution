@@ -1,11 +1,12 @@
 package br.com.naysinger.domain.service;
 
-import br.com.naysinger.common.enums.SessionStatus;
-import br.com.naysinger.domain.model.AgendaCycle;
+import br.com.naysinger.domain.model.Agenda;
 import br.com.naysinger.domain.model.Session;
-import br.com.naysinger.domain.port.AgendaCyclePort;
+import br.com.naysinger.domain.port.AgendaPort;
 import br.com.naysinger.common.exception.BusinessException;
 import br.com.naysinger.common.exception.DuplicateCpfException;
+import br.com.naysinger.common.enums.AgendaStatus;
+import br.com.naysinger.common.enums.SessionStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -13,68 +14,68 @@ import reactor.core.publisher.Flux;
 import java.time.LocalDateTime;
 
 @Service
-public class AgendaCycleService {
+public class AgendaService {
     
-    private final AgendaCyclePort agendaCyclePort;
+    private final AgendaPort agendaPort;
     
-    public AgendaCycleService(AgendaCyclePort agendaCyclePort) {
-        this.agendaCyclePort = agendaCyclePort;
+    public AgendaService(AgendaPort agendaPort) {
+        this.agendaPort = agendaPort;
     }
     
     /**
      * Cria uma nova agenda
      */
-    public Mono<AgendaCycle> createAgendaCycle(AgendaCycle agendaCycle) {
-        return agendaCyclePort.save(agendaCycle);
+    public Mono<Agenda> createAgenda(Agenda agenda) {
+        return agendaPort.save(agenda);
     }
     
     /**
      * Busca uma agenda por ID
      */
-    public Mono<AgendaCycle> findById(String id) {
-        return agendaCyclePort.findById(id)
+    public Mono<Agenda> findById(String id) {
+        return agendaPort.findById(id)
             .switchIfEmpty(Mono.error(new BusinessException("Agenda não encontrada com ID: " + id)));
     }
     
     /**
      * Busca uma agenda por agendaId
      */
-    public Mono<AgendaCycle> findByAgendaId(String agendaId) {
-        return agendaCyclePort.findByAgendaId(agendaId)
+    public Mono<Agenda> findByAgendaId(String agendaId) {
+        return agendaPort.findByAgendaId(agendaId)
             .switchIfEmpty(Mono.error(new BusinessException("Agenda não encontrada com agendaId: " + agendaId)));
     }
     
     /**
      * Busca uma agenda por sessionId
      */
-    public Mono<AgendaCycle> findBySessionId(String sessionId) {
-        return agendaCyclePort.findBySessionId(sessionId)
+    public Mono<Agenda> findBySessionId(String sessionId) {
+        return agendaPort.findBySessionId(sessionId)
             .switchIfEmpty(Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId)));
     }
     
     /**
      * Busca todas as agendas
      */
-    public Flux<AgendaCycle> findAll() {
-        return agendaCyclePort.findAll();
+    public Flux<Agenda> findAll() {
+        return agendaPort.findAll();
     }
     
     /**
      * Busca agendas com sessões ativas
      */
-    public Flux<AgendaCycle> findActiveSessions() {
-        return agendaCyclePort.findAgendasWithActiveSession();
+    public Flux<Agenda> findActiveSessions() {
+        return agendaPort.findAgendasWithActiveSession();
     }
     
     /**
      * Adiciona uma sessão a uma agenda existente
      */
-    public Mono<AgendaCycle> addSession(String agendaId, LocalDateTime startTime, Integer durationMinutes) {
-        return agendaCyclePort.findByAgendaId(agendaId)
+    public Mono<Agenda> addSession(String agendaId, LocalDateTime startTime, Integer durationMinutes) {
+        return agendaPort.findByAgendaId(agendaId)
             .switchIfEmpty(Mono.error(new BusinessException("Agenda não encontrada com ID: " + agendaId)))
-            .flatMap(agendaCycle -> {
+            .flatMap(agenda -> {
                 // Validar se já existe uma sessão ativa (não expirada) para esta agenda
-                if (agendaCycle.hasActiveSession()) {
+                if (agenda.hasActiveSession()) {
                     return Mono.error(new BusinessException("Já existe uma sessão ativa (não expirada) para esta agenda. Aguarde a sessão atual expirar ou feche-a antes de criar uma nova."));
                 }
                 
@@ -89,26 +90,43 @@ public class AgendaCycleService {
                 }
                 
                 // Adicionar sessão
-                return agendaCyclePort.addSession(agendaId, startTime, durationMinutes);
+                return agendaPort.addSession(agendaId, startTime, durationMinutes);
             });
     }
     
     /**
      * Fecha uma sessão
      */
-    public Mono<AgendaCycle> closeSession(String sessionId) {
-        return agendaCyclePort.closeSession(sessionId);
+    public Mono<Agenda> closeSession(String sessionId) {
+        return agendaPort.closeSession(sessionId);
+    }
+    
+    /**
+     * Fecha uma agenda e todas as suas sessões abertas
+     */
+    public Mono<Agenda> closeAgenda(String agendaId) {
+        return agendaPort.findByAgendaId(agendaId)
+            .switchIfEmpty(Mono.error(new BusinessException("Agenda não encontrada com agendaId: " + agendaId)))
+            .flatMap(agenda -> {
+                // Validar se a agenda já está fechada
+                if (agenda.getStatus() == AgendaStatus.CLOSED) {
+                    return Mono.error(new BusinessException("Agenda já está fechada"));
+                }
+                
+                // Fechar a agenda e todas as sessões abertas
+                return agendaPort.closeAgenda(agendaId);
+            });
     }
     
     /**
      * Adiciona um voto a uma sessão
      */
-    public Mono<AgendaCycle> addVote(String sessionId, String userId, String cpf, String voteType) {
-        return agendaCyclePort.findBySessionId(sessionId)
+    public Mono<Agenda> addVote(String sessionId, String userId, String cpf, String voteType) {
+        return agendaPort.findBySessionId(sessionId)
             .switchIfEmpty(Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId)))
-            .flatMap(agendaCycle -> {
+            .flatMap(agenda -> {
                 // Obter a sessão específica
-                Session targetSession = agendaCycle.getSessionById(sessionId);
+                Session targetSession = agenda.getSessionById(sessionId);
                 if (targetSession == null) {
                     return Mono.error(new BusinessException("Sessão não encontrada com sessionId: " + sessionId));
                 }
@@ -135,7 +153,7 @@ public class AgendaCycleService {
                 }
                 
                 // Adicionar voto
-                return agendaCyclePort.addVote(sessionId, userId, cpf, voteType);
+                return agendaPort.addVote(sessionId, userId, cpf, voteType);
             });
     }
 }

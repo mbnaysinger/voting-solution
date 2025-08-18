@@ -3,7 +3,7 @@ package br.com.naysinger.api.mapper;
 import br.com.naysinger.api.dto.AgendaRequestDTO;
 import br.com.naysinger.api.dto.AgendaResponseDTO;
 import br.com.naysinger.api.dto.session.SessionDTO;
-import br.com.naysinger.domain.model.AgendaCycle;
+import br.com.naysinger.domain.model.Agenda;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class AgendaMapper {
     /**
      * Converte AgendaRequestDTO para AgendaCycle (domínio)
      */
-    public AgendaCycle toDomain(AgendaRequestDTO dto) {
+    public Agenda toDomain(AgendaRequestDTO dto) {
         if (dto == null) {
             return null;
         }
@@ -27,7 +27,7 @@ public class AgendaMapper {
         // Gerar agendaId automático
         String agendaId = "agenda_" + System.currentTimeMillis();
         
-        AgendaCycle agendaCycle = AgendaCycle.createNew(
+        Agenda agenda = Agenda.createNew(
             agendaId,
             dto.getTitle(),
             dto.getDescription(),
@@ -36,32 +36,32 @@ public class AgendaMapper {
         
         // Se foram fornecidos dados da sessão, criar a sessão também
         if (dto.getSessionStartTime() != null && dto.getSessionDurationMinutes() != null) {
-            agendaCycle.addSession(dto.getSessionStartTime(), dto.getSessionDurationMinutes());
+            agenda.addSession(dto.getSessionStartTime(), dto.getSessionDurationMinutes());
         }
         
-        return agendaCycle;
+        return agenda;
     }
     
     /**
      * Converte AgendaCycle (domínio) para AgendaResponseDTO
      */
-    public AgendaResponseDTO toResponse(AgendaCycle agendaCycle) {
-        if (agendaCycle == null) {
+    public AgendaResponseDTO toResponse(Agenda agenda) {
+        if (agenda == null) {
             return null;
         }
         
         AgendaResponseDTO dto = new AgendaResponseDTO();
-        dto.setId(agendaCycle.getId());
-        dto.setAgendaId(agendaCycle.getAgendaId());
-        dto.setTitle(agendaCycle.getTitle());
-        dto.setDescription(agendaCycle.getDescription());
-        dto.setStatus(agendaCycle.getStatus());
-        dto.setCreatedAt(agendaCycle.getCreatedAt());
-        dto.setCreatedBy(agendaCycle.getCreatedBy());
+        dto.setId(agenda.getId());
+        dto.setAgendaId(agenda.getAgendaId());
+        dto.setTitle(agenda.getTitle());
+        dto.setDescription(agenda.getDescription());
+        dto.setStatus(agenda.getStatus());
+        dto.setCreatedAt(agenda.getCreatedAt());
+        dto.setCreatedBy(agenda.getCreatedBy());
         
         // Converter sessões se existirem usando o SessionMapper
-        if (agendaCycle.getSessions() != null && !agendaCycle.getSessions().isEmpty()) {
-            List<SessionDTO> sessions = agendaCycle.getSessions().stream()
+        if (agenda.getSessions() != null && !agenda.getSessions().isEmpty()) {
+            List<SessionDTO> sessions = agenda.getSessions().stream()
                 .map(sessionMapper::toDTO)
                 .collect(Collectors.toList());
             dto.setSessions(sessions);
