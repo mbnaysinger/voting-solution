@@ -60,37 +60,9 @@ public class Agenda {
         return sessions;
     }
     
-    // Método para verificar se tem sessões
-    public boolean hasSession() {
-        return sessions != null && !sessions.isEmpty();
-    }
-    
     // Método para verificar se tem sessão ativa
     public boolean hasActiveSession() {
         return sessions != null && sessions.stream().anyMatch(Session::isActive);
-    }
-    
-    // Método para verificar se tem sessão em andamento (já começou e não expirou)
-    public boolean hasSessionInProgress() {
-        return sessions != null && sessions.stream().anyMatch(Session::isInProgress);
-    }
-    
-    // Método para obter sessão ativa
-    public Session getActiveSession() {
-        if (sessions == null) return null;
-        return sessions.stream()
-            .filter(Session::isActive)
-            .findFirst()
-            .orElse(null);
-    }
-    
-    // Método para obter sessão em andamento
-    public Session getSessionInProgress() {
-        if (sessions == null) return null;
-        return sessions.stream()
-            .filter(Session::isInProgress)
-            .findFirst()
-            .orElse(null);
     }
     
     // Método para obter sessão por ID

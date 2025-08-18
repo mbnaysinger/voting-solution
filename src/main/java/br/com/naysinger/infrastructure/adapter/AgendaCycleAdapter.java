@@ -8,8 +8,6 @@ import br.com.naysinger.infrastructure.repository.AgendaCycleRepository;
 import br.com.naysinger.common.enums.SessionStatus;
 import br.com.naysinger.common.enums.AgendaStatus;
 import br.com.naysinger.common.enums.VoteType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -21,9 +19,7 @@ import br.com.naysinger.infrastructure.entity.VoteEntity;
 
 @Component
 public class AgendaCycleAdapter implements AgendaPort {
-    
-    private static final Logger logger = LoggerFactory.getLogger(AgendaCycleAdapter.class);
-    
+
     private final AgendaCycleRepository agendaCycleRepository;
     private final AgendaCycleMapper agendaCycleMapper;
     
@@ -66,13 +62,6 @@ public class AgendaCycleAdapter implements AgendaPort {
     @Override
     public Flux<Agenda> findAgendasWithActiveSession() {
         return agendaCycleRepository.findAgendasWithActiveSession()
-            .map(agendaCycleMapper::toDomain);
-    }
-    
-    @Override
-    public Mono<Agenda> update(Agenda agenda) {
-        AgendaCycleEntity entity = agendaCycleMapper.toEntity(agenda);
-        return agendaCycleRepository.save(entity)
             .map(agendaCycleMapper::toDomain);
     }
     

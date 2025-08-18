@@ -20,8 +20,6 @@ public interface AgendaPort {
 
     Flux<Agenda> findAgendasWithActiveSession();
 
-    Mono<Agenda> update(Agenda agenda);
-
     Mono<Agenda> addSession(String agendaId, LocalDateTime startTime, Integer durationMinutes);
 
     Mono<Agenda> closeSession(String sessionId);
