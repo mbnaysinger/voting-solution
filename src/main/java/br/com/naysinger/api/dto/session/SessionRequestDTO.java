@@ -1,4 +1,4 @@
-package br.com.naysinger.api.dto;
+package br.com.naysinger.api.dto.session;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
-public class AddSessionRequestDTO {
+public class SessionRequestDTO {
     
     @NotNull(message = "A data de início é obrigatória")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -17,10 +17,10 @@ public class AddSessionRequestDTO {
     private Integer durationMinutes;
     
     // Construtor padrão
-    public AddSessionRequestDTO() {}
+    public SessionRequestDTO() {}
     
     // Construtor com todos os campos
-    public AddSessionRequestDTO(LocalDateTime startTime, Integer durationMinutes) {
+    public SessionRequestDTO(LocalDateTime startTime, Integer durationMinutes) {
         this.startTime = startTime;
         this.durationMinutes = durationMinutes;
     }

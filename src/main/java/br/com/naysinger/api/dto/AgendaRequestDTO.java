@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
-public class AgendaCycleRequestDTO {
+public class AgendaRequestDTO {
     
     @NotBlank(message = "O título é obrigatório")
     private String title;
@@ -23,11 +23,11 @@ public class AgendaCycleRequestDTO {
     private Integer sessionDurationMinutes;
     
     // Construtor padrão
-    public AgendaCycleRequestDTO() {}
+    public AgendaRequestDTO() {}
     
     // Construtor com todos os campos
-    public AgendaCycleRequestDTO(String title, String description, String createdBy,
-                                LocalDateTime sessionStartTime, Integer sessionDurationMinutes) {
+    public AgendaRequestDTO(String title, String description, String createdBy,
+                            LocalDateTime sessionStartTime, Integer sessionDurationMinutes) {
         this.title = title;
         this.description = description;
         this.createdBy = createdBy;

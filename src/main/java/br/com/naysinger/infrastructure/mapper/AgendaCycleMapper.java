@@ -1,8 +1,15 @@
 package br.com.naysinger.infrastructure.mapper;
 
 import br.com.naysinger.domain.model.AgendaCycle;
+import br.com.naysinger.domain.model.Session;
+import br.com.naysinger.domain.model.Vote;
 import br.com.naysinger.infrastructure.entity.AgendaCycleEntity;
+import br.com.naysinger.infrastructure.entity.SessionEntity;
+import br.com.naysinger.infrastructure.entity.VoteEntity;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class AgendaCycleMapper {
@@ -26,7 +33,7 @@ public class AgendaCycleMapper {
         
         // Converter sessão se existir
         if (entity.getSession() != null) {
-            AgendaCycle.Session session = convertSessionEntityToSession(entity.getSession());
+            Session session = convertSessionEntityToSession(entity.getSession());
             agendaCycle.setSession(session);
         }
         
@@ -43,7 +50,7 @@ public class AgendaCycleMapper {
         
         AgendaCycleEntity entity = new AgendaCycleEntity();
         entity.setId(agendaCycle.getId());
-        entity.setAgendaId("agenda_" + System.currentTimeMillis());
+        entity.setAgendaId(agendaCycle.getAgendaId());
         entity.setTitle(agendaCycle.getTitle());
         entity.setDescription(agendaCycle.getDescription());
         entity.setStatus(agendaCycle.getStatus());
@@ -52,7 +59,7 @@ public class AgendaCycleMapper {
         
         // Converter sessão se existir
         if (agendaCycle.getSession() != null) {
-            br.com.naysinger.infrastructure.entity.SessionEntity sessionEntity = convertSessionToSessionEntity(agendaCycle.getSession());
+            SessionEntity sessionEntity = convertSessionToSessionEntity(agendaCycle.getSession());
             entity.setSession(sessionEntity);
         }
         
@@ -62,12 +69,12 @@ public class AgendaCycleMapper {
     /**
      * Converte SessionEntity para Session (domínio)
      */
-    private AgendaCycle.Session convertSessionEntityToSession(br.com.naysinger.infrastructure.entity.SessionEntity entity) {
+    private Session convertSessionEntityToSession(SessionEntity entity) {
         if (entity == null) {
             return null;
         }
         
-        AgendaCycle.Session session = new AgendaCycle.Session();
+        Session session = new Session();
         session.setSessionId(entity.getSessionId());
         session.setStartTime(entity.getStartTime());
         session.setEndTime(entity.getEndTime());
@@ -75,9 +82,9 @@ public class AgendaCycleMapper {
         
         // Converter votos se existirem
         if (entity.getVotes() != null) {
-            java.util.List<AgendaCycle.Session.Vote> votes = entity.getVotes().stream()
+            List<Vote> votes = entity.getVotes().stream()
                 .map(this::convertVoteEntityToVote)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
             session.setVotes(votes);
         }
         
@@ -87,22 +94,22 @@ public class AgendaCycleMapper {
     /**
      * Converte Session (domínio) para SessionEntity
      */
-    private br.com.naysinger.infrastructure.entity.SessionEntity convertSessionToSessionEntity(AgendaCycle.Session session) {
+    private SessionEntity convertSessionToSessionEntity(Session session) {
         if (session == null) {
             return null;
         }
         
-        br.com.naysinger.infrastructure.entity.SessionEntity entity = new br.com.naysinger.infrastructure.entity.SessionEntity();
-        entity.setSessionId("session_" + System.currentTimeMillis());
+        SessionEntity entity = new SessionEntity();
+        entity.setSessionId(session.getSessionId());
         entity.setStartTime(session.getStartTime());
         entity.setEndTime(session.getEndTime());
         entity.setStatus(session.getStatus());
         
         // Converter votos se existirem
         if (session.getVotes() != null) {
-            java.util.List<br.com.naysinger.infrastructure.entity.VoteEntity> votes = session.getVotes().stream()
+            List<VoteEntity> votes = session.getVotes().stream()
                 .map(this::convertVoteToVoteEntity)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
             entity.setVotes(votes);
         }
         
@@ -112,12 +119,12 @@ public class AgendaCycleMapper {
     /**
      * Converte VoteEntity para Vote (domínio)
      */
-    private AgendaCycle.Session.Vote convertVoteEntityToVote(br.com.naysinger.infrastructure.entity.VoteEntity entity) {
+    private Vote convertVoteEntityToVote(VoteEntity entity) {
         if (entity == null) {
             return null;
         }
         
-        AgendaCycle.Session.Vote vote = new AgendaCycle.Session.Vote();
+        Vote vote = new Vote();
         vote.setUserId(entity.getUserId());
         vote.setCpf(entity.getCpf());
         vote.setVote(entity.getVote());
@@ -129,12 +136,12 @@ public class AgendaCycleMapper {
     /**
      * Converte Vote (domínio) para VoteEntity
      */
-    private br.com.naysinger.infrastructure.entity.VoteEntity convertVoteToVoteEntity(AgendaCycle.Session.Vote vote) {
+    private VoteEntity convertVoteToVoteEntity(Vote vote) {
         if (vote == null) {
             return null;
         }
         
-        br.com.naysinger.infrastructure.entity.VoteEntity entity = new br.com.naysinger.infrastructure.entity.VoteEntity();
+        VoteEntity entity = new VoteEntity();
         entity.setUserId(vote.getUserId());
         entity.setCpf(vote.getCpf());
         entity.setVote(vote.getVote());
