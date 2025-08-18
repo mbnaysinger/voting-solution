@@ -22,7 +22,7 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.BASE_URL || 'http://host.docker.internal:8080/api/v1/agenda';
+const BASE_URL = 'http://host.docker.internal:8080/api/v1/agenda';
 
 function pad(v) { return String(v).padStart(2, '0'); }
 function formatLocalDateTimePlusSeconds(seconds) {
