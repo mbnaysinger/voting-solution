@@ -10,7 +10,7 @@ export const options = {
   scenarios: {
     voting: {
       executor: 'constant-arrival-rate',
-      rate: Number(1),    //1 voto
+      rate: Number(1),          //1 voto
       timeUnit: '2s',           //a cada 2 seg
       duration: String('2m'),
       preAllocatedVUs: 10,

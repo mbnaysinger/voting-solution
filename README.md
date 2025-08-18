@@ -111,6 +111,10 @@ Saída:
 - Resumo no stdout
 - Artefatos em `load-test/summary.html` e `load-test/summary.json`
 
+#### Exemplo de relatório (HTML) do k6
+
+![Exemplo de relatório do k6](report_example.png)
+
 ### Regras de negócio aplicadas
 - **Criação de sessão**: início deve ser no futuro e duração mínima de 1 minuto.
 - **Somente uma sessão ativa** por agenda; se existir sessão aberta/não expirada, bloquear nova criação.
