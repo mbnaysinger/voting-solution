@@ -16,6 +16,11 @@ public class HealthController {
         return Mono.just(Map.of(
                 "status", "UP",
                 "service", "Voting Solution API",
+                "version", "1.0.0",
+                "apiVersions", Map.of(
+                        "v1", "/api/v1",
+                        "swagger", "/swagger-ui.html"
+                ),
                 "timestamp", System.currentTimeMillis()
         ));
     }
