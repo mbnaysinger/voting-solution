@@ -7,6 +7,7 @@ import br.com.naysinger.api.dto.session.SessionRequestDTO;
 import br.com.naysinger.api.dto.vote.VoteRequestDTO;
 import br.com.naysinger.api.mapper.AgendaMapper;
 import br.com.naysinger.common.enums.SessionStatus;
+import br.com.naysinger.common.exception.BusinessException;
 import br.com.naysinger.domain.model.Session;
 import br.com.naysinger.domain.model.VoteResult;
 import br.com.naysinger.domain.service.AgendaService;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
@@ -54,26 +56,15 @@ public class AgendaController {
 			.map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
 	}
 	
-	@GetMapping("/{id}")
-	@Operation(summary = "Buscar agenda por ID", 
-	           description = "Retorna os detalhes completos de uma agenda com suas sessões e votos")
-	public Mono<ResponseEntity<AgendaResponseDTO>> getAgenda(@PathVariable String id) {
-		LOGGER.info("[getAgenda] Buscando agenda por id={}", id);
-		return agendaService.findById(id)
-			.doOnError(e -> LOGGER.error("[getAgenda] Erro ao buscar agenda. id={}", id, e))
-			.map(agendaMapper::toResponse)
-			.map(ResponseEntity::ok);
-	}
-	
-	@GetMapping("/agenda/{agendaId}")
+	@GetMapping("/{agendaId}")
 	@Operation(summary = "Buscar agenda por agendaId", 
 	           description = "Retorna os detalhes completos de uma agenda com suas sessões e votos")
 	public Mono<ResponseEntity<AgendaResponseDTO>> getAgendaByAgendaId(@PathVariable String agendaId) {
 		LOGGER.info("[getAgendaByAgendaId] Buscando agenda por agendaId={}", agendaId);
 		return agendaService.findByAgendaId(agendaId)
-			.doOnError(e -> LOGGER.error("[getAgendaByAgendaId] Erro ao buscar agenda. agendaId={}", agendaId, e))
-			.map(agendaMapper::toResponse)
-			.map(ResponseEntity::ok);
+                .map(agenda -> ResponseEntity.ok(agendaMapper.toResponse(agenda)))
+                .onErrorReturn(BusinessException.class, ResponseEntity.notFound().build())
+                .doOnError(e -> LOGGER.error("[getAgendaByAgendaId] Erro ao buscar agenda. agendaId={}", agendaId, e));
 	}
 	
 	@GetMapping("/session/{sessionId}")

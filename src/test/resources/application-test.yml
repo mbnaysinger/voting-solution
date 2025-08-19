@@ -13,9 +13,12 @@ spring:
       username:
       password:
       authentication-database:
+      # Configuração para acelerar a descoberta do servidor em ambiente de teste
+      # e evitar timeouts intermitentes.
+      options:
+        serverSelectionTimeoutMS: 5000
   jackson:
     default-property-inclusion: non_null
-
 logging:
   level:
     org.springframework.data.mongodb: INFO
