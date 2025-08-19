@@ -1,4 +1,4 @@
-package br.com.naysinger.domain.service;
+package br.com.naysinger.service;
 
 import br.com.naysinger.domain.model.Agenda;
 import br.com.naysinger.domain.model.Session;

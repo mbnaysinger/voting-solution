@@ -13,7 +13,7 @@ import br.com.naysinger.common.enums.SessionStatus;
 import br.com.naysinger.common.exception.BusinessException;
 import br.com.naysinger.domain.model.Session;
 import br.com.naysinger.domain.model.VoteResult;
-import br.com.naysinger.domain.service.AgendaService;
+import br.com.naysinger.service.AgendaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
