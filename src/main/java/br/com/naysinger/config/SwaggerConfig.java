@@ -18,9 +18,6 @@ public class SwaggerConfig {
     @Value("${server.port:8080}")
     private String serverPort;
 
-    @Value("${voting-solution.callback.domain:http://localhost:8080}")
-    private String callbackDomain;
-
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -29,19 +26,16 @@ public class SwaggerConfig {
                         .description("API para sistema de votação cooperativa - Solução técnica para aplicação mobile")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("Nay Singer")
-                                .email("contato@naysinger.com")
-                                .url("https://github.com/naysinger"))
+                                .name("Naysinger Tech")
+                                .email("maikenborges@gmail.com")
+                                .url("https://github.com/mbnaysinger"))
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:" + serverPort)
-                                .description("Servidor Local"),
-                        new Server()
-                                .url(callbackDomain)
-                                .description("Servidor de Callback")
+                                .description("Servidor Local")
                 ));
     }
 

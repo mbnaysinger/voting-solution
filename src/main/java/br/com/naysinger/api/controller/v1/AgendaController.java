@@ -6,6 +6,9 @@ import br.com.naysinger.api.dto.vote.VoteResultResponse;
 import br.com.naysinger.api.dto.session.SessionRequestDTO;
 import br.com.naysinger.api.dto.vote.VoteRequestDTO;
 import br.com.naysinger.api.mapper.AgendaMapper;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import br.com.naysinger.common.enums.SessionStatus;
 import br.com.naysinger.common.exception.BusinessException;
 import br.com.naysinger.domain.model.Session;
@@ -24,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
@@ -32,7 +34,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/agenda")
-@Tag(name = "Agenda Cycles", description = "API para gerenciamento completo de agendas com sessões de votação")
+@Tag(name = "Agenda Cycles", description = "API para gerenciamento completo de pautas com sessões de votação")
 public class AgendaController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AgendaController.class);
 	
@@ -45,20 +47,32 @@ public class AgendaController {
 	}
 	
 	@PostMapping
-	@Operation(summary = "Criar uma nova agenda com ou sem sessão", 
-	           description = "Cria uma nova agenda e opcionalmente uma sessão de votação")
+	@Operation(summary = "Criar uma nova pauta com ou sem sessão",
+	           description = "Cria uma nova pauta e opcionalmente uma sessão de votação")
+	@ApiResponse(responseCode = "201", description = "Agenda criada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "400", description = "Requisição inválida", 
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor", 
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> createAgenda(@Valid @RequestBody AgendaRequestDTO request) {
-		LOGGER.info("[createAgenda] Iniciando criação de agenda. title={}, createdBy={}", request.getTitle(), request.getCreatedBy());
+		LOGGER.info("[createAgenda] Iniciando criação de pauta. title={}, createdBy={}", request.getTitle(), request.getCreatedBy());
 		return agendaService.createAgenda(agendaMapper.toDomain(request))
-			.doOnSuccess(a -> LOGGER.info("[createAgenda] Agenda criada com sucesso. agendaId={}", a.getAgendaId()))
-			.doOnError(e -> LOGGER.error("[createAgenda] Erro ao criar agenda. title={}", request.getTitle(), e))
+			.doOnSuccess(a -> LOGGER.info("[createAgenda] Pauta criada com sucesso. agendaId={}", a.getAgendaId()))
+			.doOnError(e -> LOGGER.error("[createAgenda] Erro ao criar pauta. title={}", request.getTitle(), e))
 			.map(agendaMapper::toResponse)
 			.map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
 	}
 	
 	@GetMapping("/{agendaId}")
-	@Operation(summary = "Buscar agenda por agendaId", 
-	           description = "Retorna os detalhes completos de uma agenda com suas sessões e votos")
+	@Operation(summary = "Buscar pauta por agendaId",
+	           description = "Retorna os detalhes completos de uma pauta com suas sessões e votos")
+	@ApiResponse(responseCode = "200", description = "Agenda encontrada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "404", description = "Agenda não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> getAgendaByAgendaId(@PathVariable String agendaId) {
 		LOGGER.info("[getAgendaByAgendaId] Buscando agenda por agendaId={}", agendaId);
 		return agendaService.findByAgendaId(agendaId)
@@ -68,8 +82,14 @@ public class AgendaController {
 	}
 	
 	@GetMapping("/session/{sessionId}")
-	@Operation(summary = "Buscar agenda por sessionId", 
-	           description = "Retorna os detalhes completos de uma agenda através do ID da sessão")
+	@Operation(summary = "Buscar pauta por sessionId",
+	           description = "Retorna os detalhes completos de uma pauta através do ID da sessão")
+	@ApiResponse(responseCode = "200", description = "Agenda encontrada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "404", description = "Sessão não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> getAgendaBySessionId(@PathVariable String sessionId) {
 		LOGGER.info("[getAgendaBySessionId] Buscando agenda por sessionId={}", sessionId);
 		return agendaService.findBySessionId(sessionId)
@@ -79,8 +99,12 @@ public class AgendaController {
 	}
 	
 	@GetMapping
-	@Operation(summary = "Listar todas as agendas", 
-	           description = "Retorna todas as agendas do sistema")
+	@Operation(summary = "Listar todas as pautas",
+	           description = "Retorna todas as pautas do sistema")
+	@ApiResponse(responseCode = "200", description = "Agendas listadas com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<Flux<AgendaResponseDTO>>> getAllAgendas() {
 		LOGGER.info("[getAllAgendas] Listando agendas");
 		return agendaService.findAll()
@@ -99,8 +123,12 @@ public class AgendaController {
 	}
 	
 	@GetMapping("/active")
-	@Operation(summary = "Listar agendas com sessões ativas", 
-	           description = "Retorna todas as agendas que possuem sessões de votação ativas")
+	@Operation(summary = "Listar pautas com sessões ativas",
+	           description = "Retorna todas as pautas que possuem sessões de votação ativas")
+	@ApiResponse(responseCode = "200", description = "Agendas com sessões ativas listadas com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<Flux<AgendaResponseDTO>>> getActiveSessions() {
 		LOGGER.info("[getActiveSessions] Listando agendas com sessões ativas");
 		return agendaService.findActiveSessions()
@@ -119,8 +147,16 @@ public class AgendaController {
 	}
 	
 	@PostMapping("/{agendaId}/sessions")
-	@Operation(summary = "Criar sessão para agenda existente", 
-	           description = "Cria uma nova sessão de votação para uma agenda já existente")
+	@Operation(summary = "Criar sessão para pauta existente",
+	           description = "Cria uma nova sessão de votação para uma pauta já existente")
+	@ApiResponse(responseCode = "201", description = "Sessão criada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "400", description = "Requisição inválida ou sessão ativa existente",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "404", description = "Agenda não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> createSessionForAgenda(
 			@PathVariable String agendaId,
 			@Valid @RequestBody SessionRequestDTO request) {
@@ -139,6 +175,12 @@ public class AgendaController {
 	@PostMapping("/session/{sessionId}/close")
 	@Operation(summary = "Fechar sessão", 
 	           description = "Fecha uma sessão de votação ativa")
+	@ApiResponse(responseCode = "200", description = "Sessão fechada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "404", description = "Sessão não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> closeSession(@PathVariable String sessionId) {
 		LOGGER.info("[closeSession] Fechando sessão. sessionId={}", sessionId);
 		return agendaService.closeSession(sessionId)
@@ -149,8 +191,16 @@ public class AgendaController {
 	}
 	
 	@PostMapping("/{agendaId}/close")
-	@Operation(summary = "Fechar agenda", 
-	           description = "Fecha uma agenda e todas as suas sessões abertas")
+	@Operation(summary = "Fechar pauta",
+	           description = "Fecha uma pauta e todas as suas sessões abertas")
+	@ApiResponse(responseCode = "200", description = "Agenda fechada com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AgendaResponseDTO.class)))
+	@ApiResponse(responseCode = "400", description = "Agenda já fechada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "404", description = "Agenda não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<AgendaResponseDTO>> closeAgenda(@PathVariable String agendaId) {
 		LOGGER.info("[closeAgenda] Fechando agenda. agendaId={}", agendaId);
 		return agendaService.closeAgenda(agendaId)
@@ -163,6 +213,16 @@ public class AgendaController {
 	@PostMapping("/session/{sessionId}/vote")
 	@Operation(summary = "Registrar voto", 
 	           description = "Registra um voto em uma sessão ativa")
+	@ApiResponse(responseCode = "201", description = "Voto computado com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "400", description = "Requisição inválida ou sessão não ativa/expirada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "404", description = "Sessão não encontrada ou CPF não apto",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "409", description = "CPF duplicado (já votou nesta sessão)",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<String>> addVote(
 			@PathVariable String sessionId,
 			@Valid @RequestBody VoteRequestDTO request) {
@@ -178,6 +238,14 @@ public class AgendaController {
 	@GetMapping("/session/{sessionId}/result")
 	@Operation(summary = "Obter resultado da votação",
 	        description = "Retorna o resultado final de uma sessão fechada")
+	@ApiResponse(responseCode = "200", description = "Resultado da votação obtido com sucesso",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = VoteResultResponse.class)))
+	@ApiResponse(responseCode = "400", description = "Sessão ainda não foi fechada ou requisição inválida",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "404", description = "Sessão não encontrada",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
+	@ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+	             content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))
 	public Mono<ResponseEntity<Object>> getVoteResult(@PathVariable String sessionId) {
 		LOGGER.info("[getVoteResult] Solicitando resultado da votação. sessionId={}", sessionId);
 		return agendaService.findBySessionId(sessionId)
