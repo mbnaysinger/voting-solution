@@ -16,11 +16,59 @@ Este é um serviço backend reativo para gerenciamento de agendas (pautas), sess
 
 ### Arquitetura proposta
 - **Estilo**: Arquitetura Hexagonal (Ports & Adapters) com reatividade end-to-end.
-  - `domain` (negócio puro): modelos (`Agenda`, `Session`, `Vote`, `VoteResult`) e portas (`AgendaPort`, `CpfValidationPort`).
-  - `infrastructure` (adapters): mapeadores entidade⇄domínio, repositório reativo (`AgendaCycleRepository`) e adapters (`AgendaCycleAdapter`, `CpfValidationFakeClient`).
-  - `api` (interface): controllers reativos (`HealthController`, `AgendaController`), DTOs e mapeadores (`AgendaMapper`, `SessionMapper`).
-  - `config`: configuração de WebFlux, Mongo reativo e OpenAPI.
-  - `common`: enums, validações e tratamento global de exceções reativas.
+- **Estrutura de Diretórios**:
+
+```
+.
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   └── br
+│   │   │       └── com
+│   │   │           └── naysinger
+│   │   │               ├── VotingSolutionApplication.java  // Ponto de entrada
+│   │   │               ├── api                             // Camada de API (Controllers, DTOs, Mappers)
+│   │   │               │   ├── controller
+│   │   │               │   │   └── v1
+│   │   │               │   │       └── AgendaController.java
+│   │   │               │   ├── dto
+│   │   │               │   └── mapper
+│   │   │               ├── common                          // Código comum (Enums, Exceptions, Paginação)
+│   │   │               │   ├── enums
+│   │   │               │   ├── exception
+│   │   │               │   └── pagination
+│   │   │               ├── config                          // Configurações do Spring (Mongo, Swagger, WebFlux)
+│   │   │               ├── domain                          // Core da aplicação (Modelos de domínio e Ports)
+│   │   │               │   ├── model
+│   │   │               │   └── port
+│   │   │               ├── infrastructure                  // Adapters de infraestrutura (MongoDB, Clientes HTTP)
+│   │   │               │   ├── adapter
+│   │   │               │   ├── entity
+│   │   │               │   ├── mapper
+│   │   │               │   └── repository
+│   │   │               └── service                         // Orquestração da lógica de negócio
+│   │   └── resources
+│   │       └── application-local.yml
+│   └── test
+│       ├── java
+│       │   └── br
+│       │       └── com
+│       │           └── naysinger
+│       │               ├── integration
+│       │               │   └── AgendaControllerIntegrationTest.java
+│       │               └── service
+│       │                   └── AgendaServiceTest.java
+│       └── resources
+│           └── application-test.yml
+├── build.gradle.kts                        // Build script do Gradle
+├── gradlew                                 // Gradle Wrapper
+├── docker-compose.yml                      // Orquestração de contêineres Docker
+├── init-mongo                              // Scripts de inicialização do MongoDB
+│   └── create-collection.js
+└── load-test                               // Testes de carga com k6
+    └── vote-load-test.js
+```
+
 - **Modelo de dados**: Agregado `Agenda` contendo uma lista de `Session`, cada uma com seus `Votes`. Otimizado para consultas e gravações no agregado (trade-off: crescimento do documento vs. simplicidade e atomicidade do uso típico).
 
 ### Por que WebFlux e MongoDB para alta concorrência
@@ -50,8 +98,7 @@ docker compose up -d mongodb mongo-express
 
 ### Endpoints principais (v1)
 - `POST /api/v1/agenda` — cria agenda (opcionalmente já com sessão)
-- `GET /api/v1/agenda/{id}` — busca por id interno
-- `GET /api/v1/agenda/agenda/{agendaId}` — busca por `agendaId`
+- `GET /api/v1/agenda/{agendaId}` — busca por `agendaId`
 - `GET /api/v1/agenda/session/{sessionId}` — busca por `sessionId`
 - `GET /api/v1/agenda` — lista agendas
 - `GET /api/v1/agenda/active` — agendas com sessões ativas
@@ -90,12 +137,9 @@ O projeto inclui um cenário k6 em `load-test/vote-load-test.js` que:
 - Dispara votos contínuos na mesma sessão, com CPFs válidos gerados
 - Gera relatórios (`/load-test/summary.html` e `/load-test/summary.json`)
 
-Suba apenas a infraestrutura necessária e rode o k6 via Compose:
+Com o container MongoDB rodando, aplique o comando k6 abaixo no terminal:
 ```bash
-docker compose up -d mongodb
-docker compose run --rm \
-  -e BASE_URL=http://host.docker.internal:8080/api/v1/agenda \
-  k6 run /load-test/vote-load-test.js
+docker compose run --rm -e BASE_URL=http://host.docker.internal:8080/api/v1/agenda k6 run /load-test/vote-load-test.js
 ```
 
 Observação: no script atual, `RATE`, `TIME_UNIT` e `DURATION` estão fixos no código (não lidos de env). O comando acima funciona, mas esses valores só terão efeito após adaptar o script para ler variáveis de ambiente.
@@ -126,9 +170,21 @@ Saída:
 - Observação: o Spring Data criará automaticamente a coleção caso não exista.
 
 ### Como rodar testes
+Para executar os testes, é necessário ter o Java 17 ou superior instalado.
+
 ```bash
 ./gradlew test
 ```
+
+Os seguintes testes foram criados para garantir a qualidade e o comportamento esperado da aplicação:
+
+- **Testes de Integração**:
+    - `AgendaControllerIntegrationTest`: Testa os endpoints da API, simulando requisições HTTP e validando as respostas. Utiliza o Testcontainers para levantar um banco de dados MongoDB em um contêiner Docker, garantindo um ambiente de teste isolado e consistente.
+- **Testes de Unidade**:
+  - `AgendaServiceTest`: Testa a lógica de negócio do `AgendaService` de forma isolada, utilizando mocks para simular as dependências externas.
+- **Testes de Contexto**:
+  - `VotingSolutionApplicationTests`: Testa se o contexto da aplicação Spring sobe corretamente.
+
 
 ### Dicas de operação e desempenho
 - Escale horizontalmente múltiplas instâncias (stateless) atrás de um balanceador.
@@ -142,6 +198,12 @@ Saída:
 - Métricas Prometheus + dashboards
 - Cache de validação de CPF (com TTL) ou client real
 - Suporte a leitura de RATE/TIME_UNIT/DURATION via env no script k6
+
+### Débito Técnico
+- **Autenticação**: A API atualmente não possui um sistema de autenticação e autorização, sendo um ponto crítico para ambientes produtivos.
+- **Paginação**: A classe de paginação foi criada em `common/pagination`, mas ainda não foi implementada na lógica dos retornos das listagens, o que pode causar problemas de performance com grandes volumes de dados.
+- **Índices do Mongo**: O MongoDB performa bem em cenários de baixa volumetria, mas para garantir a performance com massividade de dados, é necessário criar índices simples e compostos nas coleções.
+- **Testes**: A cobertura de testes pode ser melhorada, principalmente nos cenários de exceção e validação de dados de entrada.
 
 ---
 Autor: Maike Naysinger Borges, veja também a documentação no Swagger UI.
