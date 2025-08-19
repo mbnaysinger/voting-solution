@@ -192,12 +192,6 @@ Os seguintes testes foram criados para garantir a qualidade e o comportamento es
 - Se o volume de votos por sessão crescer muito, considerar particionar votos em coleção própria com agregações ou usar padrões como outbox/event streaming para contabilização.
 - Considere idempotência por `userId`/`cpf`/`sessionId` em chamadas externas e limites de taxa.
 
-### Roadmap (sugestões)
-- Idempotência e proteção contra replays
-- Índices compostos/TTL para sessões expiradas
-- Métricas Prometheus + dashboards
-- Cache de validação de CPF (com TTL) ou client real
-- Suporte a leitura de RATE/TIME_UNIT/DURATION via env no script k6
 
 ### Débito Técnico
 - **Autenticação**: A API atualmente não possui um sistema de autenticação e autorização, sendo um ponto crítico para ambientes produtivos.
