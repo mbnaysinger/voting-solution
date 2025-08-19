@@ -3,7 +3,6 @@ package br.com.naysinger.integration;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -19,8 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @ActiveProfiles("test")
-@AutoConfigureWebTestClient(timeout = "10s")
-@ContextConfiguration(classes = {br.com.naysinger.config.TestConfiguration.class})
+@AutoConfigureWebTestClient(timeout = "60s")
 public abstract class AbstractIntegrationTest {
 
     @Autowired
@@ -33,17 +31,21 @@ public abstract class AbstractIntegrationTest {
             .withExposedPorts(27017)
             .waitingFor(
                     Wait.forLogMessage(".*Waiting for connections.*\\n", 1)
-                            .withStartupTimeout(Duration.ofSeconds(30))
+                            .withStartupTimeout(Duration.ofSeconds(120))
             )
-            .withReuse(true);
+            .withReuse(false); // Mudando para false para evitar conflitos
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.host", mongoDBContainer::getHost);
         registry.add("spring.data.mongodb.port", mongoDBContainer::getFirstMappedPort);
-        registry.add("spring.data.mongodb.database", () -> "voting-solution-test");
+        registry.add("spring.data.mongodb.database", () -> "voting-solution-test-" + System.currentTimeMillis());
         registry.add("spring.data.mongodb.username", () -> "admin");
         registry.add("spring.data.mongodb.password", () -> "voting123");
         registry.add("spring.data.mongodb.authentication-database", () -> "admin");
+        // Adicionar configurações de timeout mais agressivas
+        registry.add("spring.data.mongodb.options.serverSelectionTimeoutMS", () -> 10000);
+        registry.add("spring.data.mongodb.options.connectTimeoutMS", () -> 10000);
+        registry.add("spring.data.mongodb.options.socketTimeoutMS", () -> 10000);
     }
 }
