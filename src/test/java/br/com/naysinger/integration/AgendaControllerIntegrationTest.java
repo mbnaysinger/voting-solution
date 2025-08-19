@@ -14,8 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -28,13 +28,12 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private AgendaCycleRepository repository;
 
-    @MockBean
+    @MockitoBean
     private CpfValidationPort cpfValidationPort;
 
     @BeforeEach
     void setUp() {
         StepVerifier.create(repository.deleteAll()).verifyComplete();
-        // Configurar comportamento padrão do mock para todos os testes
         Mockito.when(cpfValidationPort.check(Mockito.anyString())).thenReturn(Mono.just(CpfStatus.ABLE_TO_VOTE));
     }
 
@@ -45,14 +44,10 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundForNonExistentAgenda() {
-        System.out.println("=== Starting shouldReturnNotFoundForNonExistentAgenda test ===");
-        
         webTestClient.get()
                 .uri("/api/v1/agenda/{agendaId}", "non-existent-id")
                 .exchange()
                 .expectStatus().isNotFound();
-        
-        System.out.println("=== Test shouldReturnNotFoundForNonExistentAgenda completed ===");
     }
 
     @Test
@@ -66,9 +61,6 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
                 10
         );
 
-        System.out.println("=== Starting shouldCreateAgendaSuccessfully test ===");
-        System.out.println("Request: " + request);
-
         // When & Then
         webTestClient.post()
                 .uri("/api/v1/agenda")
@@ -77,13 +69,10 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
                 .expectStatus().isCreated()
                 .expectBody(AgendaResponseDTO.class)
                 .value(response -> {
-                    System.out.println("Response received: " + response);
                     assertThat(response.getTitle()).isEqualTo("New Agenda Title");
                     assertThat(response.getCreatedBy()).isEqualTo("test-creator");
                     assertThat(response.getSessions()).hasSize(1);
                 });
-        
-        System.out.println("=== Test shouldCreateAgendaSuccessfully completed ===");
     }
 
     @Test
@@ -145,7 +134,7 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
                     webTestClient.post().uri("/api/v1/agenda/session/{sessionId}/vote", sessionId)
                             .bodyValue(voteRequest).exchange().expectStatus().isCreated();
 
-                    // When & Then: Vote again with the same CPF
+                    // When & Then: votando novamente com o mesmo CPF
                     webTestClient.post()
                             .uri("/api/v1/agenda/session/{sessionId}/vote", sessionId)
                             .bodyValue(voteRequest) // Sending the same request again
@@ -203,32 +192,27 @@ public class AgendaControllerIntegrationTest extends AbstractIntegrationTest {
         // Given
         Mockito.when(cpfValidationPort.check("12345678909")).thenReturn(Mono.error(new CpfNotFoundException("12345678909")));
 
-        try {
-            createAgendaWithSession("CPF Unable to Vote", 1)
-                    .as(StepVerifier::create)
-                    .assertNext(createdAgenda -> {
-                        String sessionId = createdAgenda.getSessions().getFirst().getSessionId();
-                        VoteRequestDTO voteRequest = new VoteRequestDTO("user1", "12345678909", "YES");
+        createAgendaWithSession("CPF Unable to Vote", 1)
+                .as(StepVerifier::create)
+                .assertNext(createdAgenda -> {
+                    String sessionId = createdAgenda.getSessions().getFirst().getSessionId();
+                    VoteRequestDTO voteRequest = new VoteRequestDTO("user1", "12345678909", "YES");
 
-                        // When & Then
-                        webTestClient.post()
-                                .uri("/api/v1/agenda/session/{sessionId}/vote", sessionId)
-                                .bodyValue(voteRequest)
-                                .exchange()
-                                .expectStatus().isNotFound()
-                                .expectBody()
-                                .jsonPath("$.error").isEqualTo("CPF não apto ou inválido");
-                    })
-                    .verifyComplete();
-        } finally {
-            // Restaurar o comportamento padrão do mock
-            Mockito.when(cpfValidationPort.check(Mockito.anyString())).thenReturn(Mono.just(CpfStatus.ABLE_TO_VOTE));
-        }
+                    // When & Then
+                    webTestClient.post()
+                            .uri("/api/v1/agenda/session/{sessionId}/vote", sessionId)
+                            .bodyValue(voteRequest)
+                            .exchange()
+                            .expectStatus().isNotFound()
+                            .expectBody()
+                            .jsonPath("$.error").isEqualTo("CPF não apto ou inválido");
+                })
+                .verifyComplete();
     }
 
     private Mono<AgendaResponseDTO> createAgendaWithSession(String title, int durationMinutes) {
-        LocalDateTime startTime = LocalDateTime.now(); // Inicia agora
-        Integer duration = durationMinutes > 0 ? durationMinutes : null; // Apenas se houver duração
+        LocalDateTime startTime = LocalDateTime.now();
+        Integer duration = durationMinutes > 0 ? durationMinutes : null;
 
         AgendaRequestDTO request = new AgendaRequestDTO(
                 title,

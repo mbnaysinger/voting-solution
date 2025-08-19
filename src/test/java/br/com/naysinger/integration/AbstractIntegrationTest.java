@@ -33,7 +33,7 @@ public abstract class AbstractIntegrationTest {
                     Wait.forLogMessage(".*Waiting for connections.*\\n", 1)
                             .withStartupTimeout(Duration.ofSeconds(120))
             )
-            .withReuse(false); // Mudando para false para evitar conflitos
+            .withReuse(false); // false para evitar conflitos
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -43,7 +43,7 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.data.mongodb.username", () -> "admin");
         registry.add("spring.data.mongodb.password", () -> "voting123");
         registry.add("spring.data.mongodb.authentication-database", () -> "admin");
-        // Adicionar configurações de timeout mais agressivas
+        // Configurações de timeout mais agressivas
         registry.add("spring.data.mongodb.options.serverSelectionTimeoutMS", () -> 10000);
         registry.add("spring.data.mongodb.options.connectTimeoutMS", () -> 10000);
         registry.add("spring.data.mongodb.options.socketTimeoutMS", () -> 10000);
